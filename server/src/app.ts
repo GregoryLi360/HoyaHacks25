@@ -84,10 +84,6 @@ router.get('/', (req, res) => {
     res.status(200).send("Healthy :)");
 });
 
-router.use((req: Request, res: Response) => {
-    res.status(404).json({ error: 'Route not found' });
-});
-
 const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN format
@@ -154,6 +150,10 @@ router.delete('/:MRN', async (req: Request, res: Response) => {
     } catch (err) {
         res.status(500).send("Error deleting patient");
     }
+});
+
+router.use((req: Request, res: Response) => {
+    res.status(404).json({ error: 'Route not found' });
 });
 
 app.use('/api', router);
