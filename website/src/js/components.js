@@ -1,4 +1,4 @@
-import { addPatient } from './patientData.js';
+import { addPatient, updatePatient } from './patientData.js';
 import { refreshPatientsList } from './patients.js';
 
 // Component loader utility
@@ -29,77 +29,82 @@ export async function initializeDashboard() {
 }
 
 export async function initializeModal() {
-    try {
-        const modalHtml = await loadComponent('add-patient');
-        const modalContainer = document.getElementById('addPatientModal');
-        
-        if (!modalContainer) {
-            throw new Error('Modal container element not found');
-        }
+    const modalHtml = `
+        <div class="modal-header">
+            <h2>Add New Patient</h2>
+            <button class="close-modal">
+                <i class="material-icons">close</i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="newPatientForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="mrn">MRN</label>
+                        <input type="text" id="mrn" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="diagnosis">Diagnosis</label>
+                        <input type="text" id="diagnosis" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary close-modal">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Patient</button>
+                </div>
+            </form>
+        </div>
+    `;
 
-        const modalContent = modalContainer.querySelector('.modal-content');
-        if (!modalContent) {
-            throw new Error('Modal content container not found');
-            return;
-        }
-
-        // Inject the HTML content
+    const modalContent = document.querySelector('#addPatientModal .modal-content');
+    if (modalContent) {
         modalContent.innerHTML = modalHtml;
-
-        // Add event listeners for close buttons
-        const closeButtons = modalContainer.querySelectorAll('.close-modal');
-        closeButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                window.closeModal();
-            });
-        });
-
-        // Close modal when clicking outside
-        modalContainer.addEventListener('click', (event) => {
-            if (event.target === modalContainer) {
-                window.closeModal();
-            }
-        });
-
-        // Initialize form submission
-        const form = modalContainer.querySelector('#newPatientForm');
-        if (form) {
-            form.addEventListener('submit', handleFormSubmit);
-        }
-
-    } catch (error) {
-        console.error('Error initializing modal:', error);
     }
-}
 
-// Form submission handler
-function handleFormSubmit(e) {
-    e.preventDefault();
-    
-    console.log('Form submitted, processing patient data');
-    
-    const formFields = {
-        firstName: document.getElementById('firstName'),
-        lastName: document.getElementById('lastName'),
-        mrn: document.getElementById('mrn'),
-        diagnosis: document.getElementById('diagnosis'),
-        notes: document.getElementById('notes'),
-        medications: document.getElementById('medications')
-    };
-    
-    const patientData = {
-        firstName: formFields.firstName?.value || '',
-        lastName: formFields.lastName?.value || '',
-        mrn: formFields.mrn?.value || '',
-        diagnosis: formFields.diagnosis?.value || '',
-        notes: formFields.notes?.value || '',
-        medications: formFields.medications?.value || ''
-    };
+    // Form submission handler
+    const form = document.getElementById('newPatientForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const patientData = {
+            firstName: form.querySelector('#firstName').value,
+            lastName: form.querySelector('#lastName').value,
+            mrn: form.querySelector('#mrn').value,
+            diagnosis: form.querySelector('#diagnosis').value
+        };
 
-    // Add the patient and refresh the list
-    addPatient(patientData);
-    refreshPatientsList();
+        try {
+            if (form.dataset.mode === 'edit') {
+                // Update existing patient
+                await updatePatient(form.dataset.originalMrn, patientData);
+                window.showNotification('edit');
+            } else {
+                // Add new patient
+                await addPatient(patientData);
+                window.showNotification('add');
+            }
 
-    window.closeModal();
-    window.showNotification();
+            // Reset form and close modal
+            form.reset();
+            delete form.dataset.mode;
+            delete form.dataset.originalMrn;
+            window.closeModal();
+
+            // Refresh the patients list
+            refreshPatientsList();
+        } catch (error) {
+            console.error('Error saving patient:', error);
+            // TODO: Show error notification
+        }
+    });
 } 

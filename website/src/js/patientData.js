@@ -2,6 +2,9 @@
 //TODO: Add database
 let patients = [];
 
+// Pagination settings
+const PATIENTS_PER_PAGE = 5;
+
 // Format date to MM/DD/YYYY
 function formatDate(date) {
     return new Date(date).toLocaleDateString('en-US', {
@@ -25,8 +28,16 @@ export function addPatient(patientData) {
     return newPatient;
 }
 
-export function getPatients() {
-    return patients;
+export function getPatients(page = 1) {
+    const startIndex = (page - 1) * PATIENTS_PER_PAGE;
+    const endIndex = startIndex + PATIENTS_PER_PAGE;
+    return {
+        patients: patients.slice(startIndex, endIndex),
+        totalPatients: patients.length,
+        totalPages: Math.ceil(patients.length / PATIENTS_PER_PAGE),
+        currentPage: page,
+        patientsPerPage: PATIENTS_PER_PAGE
+    };
 }
 
 export function deletePatient(mrn) {
@@ -43,6 +54,21 @@ export function updatePatientEmotion(mrn, emotionalState) {
     if (patient) {
         patient.emotionalState = emotionalState;
     }
+}
+
+export function updatePatient(originalMrn, updatedData) {
+    const index = patients.findIndex(p => p.mrn === originalMrn);
+    if (index !== -1) {
+        // Preserve the original dateAdmitted and emotionalState
+        const originalPatient = patients[index];
+        patients[index] = {
+            ...updatedData,
+            dateAdmitted: originalPatient.dateAdmitted,
+            emotionalState: originalPatient.emotionalState
+        };
+        return true;
+    }
+    return false;
 }
 
 // Emotional state definitions

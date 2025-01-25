@@ -30,6 +30,44 @@ function deletePatientHandler(mrn) {
     }
 }
 
+// Edit patient handler
+function editPatientHandler(patient) {
+    // Get the modal and update its content
+    const modal = document.getElementById('addPatientModal');
+    const modalTitle = modal.querySelector('.modal-header h2');
+    modalTitle.textContent = 'Edit Patient';
+
+    // Fill in the form fields
+    const form = document.getElementById('newPatientForm');
+    
+    // Set values and ensure cursor goes to end of input
+    const inputs = {
+        firstName: form.querySelector('#firstName'),
+        lastName: form.querySelector('#lastName'),
+        mrn: form.querySelector('#mrn'),
+        diagnosis: form.querySelector('#diagnosis')
+    };
+
+    // Set values and fix cursor position
+    Object.entries(inputs).forEach(([key, input]) => {
+        input.value = patient[key];
+        // Move cursor to end of input
+        input.addEventListener('focus', function() {
+            const len = this.value.length;
+            this.setSelectionRange(len, len);
+        }, { once: true });
+    });
+
+    // Show the modal
+    modal.style.display = 'flex';
+    modal.offsetHeight; // Force reflow
+    modal.classList.add('show');
+
+    // Update form submission to handle edit
+    form.dataset.mode = 'edit';
+    form.dataset.originalMrn = patient.mrn;
+}
+
 // Create patient row HTML
 function createPatientRow(patient) {
     const initial = (patient.firstName[0] || '').toUpperCase();
@@ -53,25 +91,130 @@ function createPatientRow(patient) {
             </div>
         </td>
         <td class="actions">
-            <button class="icon-btn"><i class="material-icons">edit</i></button>
-            <button class="icon-btn delete-btn"><i class="material-icons">delete</i></button>
-            <button class="icon-btn"><i class="material-icons">more_vert</i></button>
+            <button class="icon-btn edit-btn" title="Edit patient"><i class="material-icons">edit</i></button>
+            <button class="icon-btn delete-btn" title="Delete patient"><i class="material-icons">delete</i></button>
+            <button class="icon-btn" title="More options"><i class="material-icons">more_vert</i></button>
         </td>
     `;
 
-    // Add delete event listener
+    // Add event listeners
     const deleteBtn = row.querySelector('.delete-btn');
     deleteBtn.addEventListener('click', () => deletePatientHandler(patient.mrn));
+
+    const editBtn = row.querySelector('.edit-btn');
+    editBtn.addEventListener('click', () => editPatientHandler(patient));
 
     return row;
 }
 
+// Create pagination HTML
+function createPaginationHTML(currentPage, totalPages) {
+    if (totalPages <= 1) return '';
+
+    let paginationHTML = '<div class="pagination">';
+    
+    // Previous button
+    paginationHTML += `
+        <button class="page-btn prev-btn" ${currentPage === 1 ? 'disabled' : ''}>
+            Prev
+        </button>
+    `;
+
+    // Page numbers
+    const pagesToShow = [];
+    // Always show first page
+    pagesToShow.push(1);
+    
+    // Calculate middle pages
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+        pagesToShow.push(i);
+    }
+    
+    // Always show last page
+    if (totalPages > 1) {
+        pagesToShow.push(totalPages);
+    }
+
+    // Add page numbers with ellipsis
+    let previousPage = 0;
+    pagesToShow.forEach(pageNum => {
+        if (pageNum - previousPage > 1) {
+            paginationHTML += '<span>...</span>';
+        }
+        paginationHTML += `
+            <button class="page-btn number-btn ${pageNum === currentPage ? 'active' : ''}" 
+                    data-page="${pageNum}">
+                ${pageNum}
+            </button>
+        `;
+        previousPage = pageNum;
+    });
+
+    // Next button
+    paginationHTML += `
+        <button class="page-btn next-btn" ${currentPage === totalPages ? 'disabled' : ''}>
+            Next
+        </button>
+    `;
+
+    // Jump to page
+    paginationHTML += `
+        <div class="jump-to-page">
+            <input type="number" 
+                   min="1" 
+                   max="${totalPages}" 
+                   value="${currentPage}"
+                   class="jump-to-page-input"
+                   title="Jump to page"
+                   placeholder="Page">
+            <span class="page-info">OF ${totalPages}</span>
+        </div>
+    `;
+
+    paginationHTML += '</div>';
+    return paginationHTML;
+}
+
+// Handle pagination clicks and jumps
+function handlePaginationClick(e, currentPage, totalPages) {
+    const target = e.target;
+    let newPage = currentPage;
+
+    if (target.classList.contains('prev-btn') && currentPage > 1) {
+        newPage = currentPage - 1;
+    } else if (target.classList.contains('next-btn') && currentPage < totalPages) {
+        newPage = currentPage + 1;
+    } else if (target.classList.contains('number-btn')) {
+        newPage = parseInt(target.dataset.page);
+    }
+
+    if (newPage !== currentPage) {
+        refreshPatientsList(newPage);
+    }
+}
+
+// Handle jump to page
+function handleJumpToPage(input, totalPages) {
+    let page = parseInt(input.value);
+    
+    // Validate input
+    if (isNaN(page)) return;
+    
+    // Ensure page is within bounds
+    page = Math.max(1, Math.min(page, totalPages));
+    
+    // Update input value if it was out of bounds
+    input.value = page;
+    
+    refreshPatientsList(page);
+}
+
 // Refresh the patients list
-export function refreshPatientsList() {
+export function refreshPatientsList(page = 1) {
     const patientsSection = document.getElementById('patients-section');
     if (!patientsSection) return;
 
-    const patients = getPatients();
+    const { patients, totalPages, currentPage } = getPatients(page);
     
     patientsSection.innerHTML = `
         <div class="section-header">
@@ -82,7 +225,7 @@ export function refreshPatientsList() {
                 </button>
                 <button class="export-btn">
                     <i class="material-icons">sync</i>
-                    Update from AI
+                    <span>Update</span>
                 </button>
             </div>
         </div>
@@ -102,18 +245,7 @@ export function refreshPatientsList() {
                 <tbody id="patients-tbody">
                 </tbody>
             </table>
-            ${patients.length > 0 ? `
-                <div class="pagination">
-                    <button class="page-btn">Prev</button>
-                    <button class="page-btn active">1</button>
-                    <button class="page-btn">2</button>
-                    <span>...</span>
-                    <button class="page-btn">7</button>
-                    <button class="page-btn">8</button>
-                    <button class="page-btn">Next</button>
-                    <span class="page-info">PAGE 1 OF 24</span>
-                </div>
-            ` : ''}
+            ${createPaginationHTML(currentPage, totalPages)}
         </div>
     `;
 
@@ -122,6 +254,23 @@ export function refreshPatientsList() {
     patients.forEach(patient => {
         tbody.appendChild(createPatientRow(patient));
     });
+
+    // Add pagination event listeners
+    const pagination = patientsSection.querySelector('.pagination');
+    if (pagination) {
+        pagination.addEventListener('click', (e) => handlePaginationClick(e, currentPage, totalPages));
+        
+        // Add jump to page handler
+        const jumpInput = pagination.querySelector('.jump-to-page-input');
+        if (jumpInput) {
+            jumpInput.addEventListener('change', () => handleJumpToPage(jumpInput, totalPages));
+            jumpInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleJumpToPage(jumpInput, totalPages);
+                }
+            });
+        }
+    }
 }
 
 // Initial load of patients section

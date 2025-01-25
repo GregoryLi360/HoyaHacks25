@@ -164,12 +164,59 @@ th {
     border-top: 1px solid var(--border-color);
 }
 
+.jump-to-page {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+    padding-left: 16px;
+    border-left: 1px solid var(--border-color);
+}
+
+.jump-to-page-input {
+    width: 60px;
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.jump-to-page-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(114, 128, 255, 0.1);
+}
+
+.jump-to-page-input::-webkit-inner-spin-button,
+.jump-to-page-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.jump-to-page-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.page-info {
+    color: #5f6368;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
 .page-btn {
     padding: 8px 12px;
     border: none;
     background: none;
     cursor: pointer;
     border-radius: 4px;
+    min-width: 40px;
+    transition: all 0.2s ease;
+}
+
+.page-btn:not(:disabled):hover {
+    background-color: var(--secondary-color);
 }
 
 .page-btn.active {
@@ -177,10 +224,9 @@ th {
     color: white;
 }
 
-.page-info {
-    margin-left: 16px;
-    color: #5f6368;
-    font-size: 14px;
+.page-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* ... (rest of the patients-specific styles from styles.css) ... */
@@ -209,18 +255,28 @@ th {
 .export-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     padding: 8px 16px;
     border-radius: 4px;
     border: none;
     cursor: pointer;
-    background-color: #1a73e8;
+    background-color: var(--primary-color);
     color: white;
-    transition: background-color 0.2s ease;
+    min-width: 100px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.export-btn i {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .export-btn:hover {
-    background-color: #1557b0;
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
 }
 
 /* Emotion Indicator Styles */
