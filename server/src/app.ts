@@ -135,6 +135,8 @@ router.get('/:MRN', async (req: Request, res: Response) => {
             res.status(404).send("Patient not found");
             return;
         }
+
+        console.log(patients);
         res.status(200).json(patients);
     } catch (err) {
         console.log(err);
@@ -146,6 +148,7 @@ router.delete('/:MRN', async (req: Request, res: Response) => {
     const medicalRecordNumber = req.params.MRN;
     try {
         await Data.deleteMany({ MRN: medicalRecordNumber });
+        console.log(`Deleted ${medicalRecordNumber}`);
         res.status(200).send("Deleted");
     } catch (err) {
         res.status(500).send("Error deleting patient");
