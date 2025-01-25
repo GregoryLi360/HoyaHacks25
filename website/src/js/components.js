@@ -1,3 +1,6 @@
+import { addPatient } from './patientData.js';
+import { refreshPatientsList } from './patients.js';
+
 // Component loader utility
 export async function loadComponent(path) {
     try {
@@ -73,7 +76,7 @@ export async function initializeModal() {
 function handleFormSubmit(e) {
     e.preventDefault();
     
-    console.log('Form submitted, closing modal and showing notification');
+    console.log('Form submitted, processing patient data');
     
     const formFields = {
         firstName: document.getElementById('firstName'),
@@ -90,10 +93,12 @@ function handleFormSubmit(e) {
         mrn: formFields.mrn?.value || '',
         diagnosis: formFields.diagnosis?.value || '',
         notes: formFields.notes?.value || '',
-        medications: formFields.medications?.value || '',
-        dateAdmitted: new Date().toISOString(),
+        medications: formFields.medications?.value || ''
     };
-    // TODO: Add patient data to database
+
+    // Add the patient and refresh the list
+    addPatient(patientData);
+    refreshPatientsList();
 
     window.closeModal();
     window.showNotification();

@@ -1,5 +1,6 @@
 import { initializeDashboard, initializeModal } from './js/components.js';
 import { loadPatientsSection } from './js/patients.js';
+import notificationManager from './js/notifications.js';
 
 console.log('Script loaded');
 
@@ -31,13 +32,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        window.showNotification = () => {
-            const notification = document.querySelector('.notification-banner');
-            console.log('Showing notification');
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
+        // Replace the old notification function with the new one
+        window.showNotification = (type = 'add') => {
+            const message = type === 'delete' ? 
+                'Patient deleted successfully' : 
+                'Patient data saved successfully';
+            notificationManager.show(message, type);
         };
 
         // Now that components are loaded, attach event listeners

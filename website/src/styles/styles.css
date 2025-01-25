@@ -400,15 +400,33 @@ header {
     color: #202124;
 }
 
+/* Export Button */
+.header-actions .export-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background-color: var(--primary-color);
+    color: white;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.header-actions .export-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
 /* Notification Banner */
 .notification-banner {
     position: fixed;
-    top: 24px;
     right: 24px;
     background: white;
     padding: 16px 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -417,6 +435,7 @@ header {
     opacity: 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
+    max-width: 300px;
 }
 
 .notification-banner.show {
@@ -444,30 +463,11 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease;
     margin-left: auto;
 }
 
 .notification-banner .close-notification:hover {
     background-color: #f1f3f4;
     color: #202124;
-}
-
-/* Export Button */
-.header-actions .export-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    background-color: var(--primary-color);
-    color: white;
-    transition: background-color 0.2s ease, transform 0.2s ease;
-}
-
-.header-actions .export-btn:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-1px);
 } 
