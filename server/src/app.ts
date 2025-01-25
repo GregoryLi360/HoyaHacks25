@@ -56,7 +56,7 @@ const router = express.Router();
 
 router.post('/login', async (req: Request, res: Response) => {
     const { username, password } = req.body;
-    
+
     if (!username || !password) {
         res.status(400).send('Username and password required');
         return;
@@ -65,7 +65,7 @@ router.post('/login', async (req: Request, res: Response) => {
     try {
         const hash = crypto.createHash('sha256');
         const token = hash.update(username + password).digest('hex');
-        
+
         const existingToken: DoctorToken | null = await Token.findOne({ token });
         if (existingToken) {
             res.status(200).json({ token });
@@ -126,7 +126,27 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.get('/:MRN', async (req: Request, res: Response) => {
+router.get('/patients', async (req: Request, res: Response) => {
+    try {
+        const data: PatientData[] = await Data.find().sort({ createdAt: -1 });
+        const groupedByMRN = data.reduce((acc: { [key: string]: PatientData[] }, doc) => {
+            if (!acc[doc.MRN]) { acc[doc.MRN] = []; }
+            acc[doc.MRN].push(doc);
+            return acc;
+        }, {});
+
+        const patients = Object.entries(groupedByMRN).map(([MRN, logs]) => ({
+            MRN,
+            logs
+        }));
+        res.status(200).json(patients);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error retrieving patients");
+    }
+});
+
+router.get('/patients/:MRN', async (req: Request, res: Response) => {
     const medicalRecordNumber = req.params.MRN;
 
     try {
@@ -144,7 +164,7 @@ router.get('/:MRN', async (req: Request, res: Response) => {
     }
 });
 
-router.delete('/:MRN', async (req: Request, res: Response) => {
+router.delete('/patients/:MRN', async (req: Request, res: Response) => {
     const medicalRecordNumber = req.params.MRN;
     try {
         await Data.deleteMany({ MRN: medicalRecordNumber });
