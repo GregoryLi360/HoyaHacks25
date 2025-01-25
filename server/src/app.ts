@@ -35,7 +35,7 @@ interface DoctorToken {
 }
 
 const dataSchema = new mongoose.Schema<PatientData>({
-    MRN: { type: String, required: true },
+    MRN: String,
     firstName: String,
     lastName: String,
     diagnosis: String,
