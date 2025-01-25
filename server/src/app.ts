@@ -1,6 +1,7 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import cors from "cors";
+import crypto from 'crypto';
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -20,21 +21,96 @@ app.use(cors(corOptions));
 
 interface PatientData {
     MRN: string;
-    info: object;
+    firstName: string;
+    lastName: string;
+    diagnosis: string;
+    notes: string;
+    medications: string;
+    createdAt: Date;
+}
+
+interface DoctorToken {
+    token: string;
+    createdAt: Date;
 }
 
 const dataSchema = new mongoose.Schema<PatientData>({
-    MRN: { type: String, required: true, index: { unique: true } },
-    info: Object
+    MRN: { type: String, required: true, index: true },
+    firstName: String,
+    lastName: String,
+    diagnosis: String,
+    notes: String,
+    medications: String,
+    createdAt: { type: Date, default: Date.now }
+});
+
+const tokenSchema = new mongoose.Schema<DoctorToken>({
+    token: { type: String, required: true, index: { unique: true } },
+    createdAt: { type: Date, default: Date.now }
 });
 
 const Data = mongoose.model('Data', dataSchema, "patients");
+const Token = mongoose.model('Token', tokenSchema, "tokens");
 
 const router = express.Router();
+
+router.post('/login', async (req: Request, res: Response) => {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+        res.status(400).send('Username and password required');
+        return;
+    }
+
+    try {
+        const hash = crypto.createHash('sha256');
+        const token = hash.update(username + password).digest('hex');
+        
+        const existingToken: DoctorToken | null = await Token.findOne({ token });
+        if (existingToken) {
+            res.status(200).json({ token });
+            return;
+        }
+
+        await Token.create({ token });
+        res.status(200).json({ token });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send('Error during login');
+    }
+});
 
 router.get('/', (req, res) => {
     res.status(200).send("Healthy :)");
 });
+
+router.use((req: Request, res: Response) => {
+    res.status(404).json({ error: 'Route not found' });
+});
+
+const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN format
+
+    if (!token) {
+        res.status(401).send('Access token required');
+        return;
+    }
+
+    try {
+        const foundToken = await Token.findOne({ token });
+        if (!foundToken) {
+            res.status(403).send('Invalid token');
+            return;
+        }
+        next();
+    } catch (err) {
+        console.log(err);
+        res.status(500).send('Error authenticating token');
+    }
+};
+
+router.use(authenticateToken);
 
 router.post('/', async (req, res) => {
     console.log(req.body);
@@ -58,20 +134,26 @@ router.get('/:MRN', async (req: Request, res: Response) => {
     const medicalRecordNumber = req.params.MRN;
 
     try {
-        const patient = await Data.findOne({ MRN: medicalRecordNumber });
-        if (!patient) {
+        const patients = await Data.find({ MRN: medicalRecordNumber }).sort({ createdAt: -1 });
+        if (!patients) {
             res.status(404).send("Patient not found");
             return;
         }
-        res.status(200).json(patient);
+        res.status(200).json(patients);
     } catch (err) {
         console.log(err);
         res.status(500).send("Error retrieving patient");
     }
 });
 
-router.use((req: Request, res: Response) => {
-    res.status(404).json({ error: 'Route not found' });
+router.delete('/:MRN', async (req: Request, res: Response) => {
+    const medicalRecordNumber = req.params.MRN;
+    try {
+        await Data.deleteMany({ MRN: medicalRecordNumber });
+        res.status(200).send("Deleted");
+    } catch (err) {
+        res.status(500).send("Error deleting patient");
+    }
 });
 
 app.use('/api', router);

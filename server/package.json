@@ -18,7 +18,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build && node dist/app.js",
+    "start": "tsc && node dist/app.js",
     "dev": "nodemon src/app.ts",
     "build": "tsc"
   },
