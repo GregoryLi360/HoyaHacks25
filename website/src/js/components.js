@@ -1,8 +1,13 @@
 // Component loader utility
 export async function loadComponent(path) {
     try {
-        const response = await fetch(`${path}.html`);
+        console.log(`Attempting to load component from: ../components/${path}.html`);
+        const response = await fetch(`../components/${path}.html`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const html = await response.text();
+        console.log(`Successfully loaded component: ${path}`);
         return html;
     } catch (error) {
         console.error(`Error loading component from ${path}:`, error);
@@ -13,7 +18,7 @@ export async function loadComponent(path) {
 // Component initialization functions
 export async function initializeDashboard() {
     try {
-        const dashboardHtml = await loadComponent('/components/dashboard/dashboard');
+        const dashboardHtml = await loadComponent('dashboard');
         document.getElementById('dashboard-section').innerHTML = dashboardHtml;
     } catch (error) {
         console.error('Error initializing dashboard:', error);
@@ -22,7 +27,7 @@ export async function initializeDashboard() {
 
 export async function initializeModal() {
     try {
-        const modalHtml = await loadComponent('/components/modals/add-patient');
+        const modalHtml = await loadComponent('add-patient');
         const modalContainer = document.getElementById('addPatientModal');
         
         if (!modalContainer) {
@@ -73,20 +78,18 @@ function handleFormSubmit(e) {
     const formFields = {
         firstName: document.getElementById('firstName'),
         lastName: document.getElementById('lastName'),
+        mrn: document.getElementById('mrn'),
         diagnosis: document.getElementById('diagnosis'),
-        treatmentPhase: document.getElementById('treatmentPhase'),
         notes: document.getElementById('notes'),
-        vitals: document.getElementById('vitals'),
         medications: document.getElementById('medications')
     };
     
     const patientData = {
         firstName: formFields.firstName?.value || '',
         lastName: formFields.lastName?.value || '',
+        mrn: formFields.mrn?.value || '',
         diagnosis: formFields.diagnosis?.value || '',
-        treatmentPhase: formFields.treatmentPhase?.value || '',
         notes: formFields.notes?.value || '',
-        vitals: formFields.vitals?.value || '',
         medications: formFields.medications?.value || '',
         dateAdmitted: new Date().toISOString(),
     };

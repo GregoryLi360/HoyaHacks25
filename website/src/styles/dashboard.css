@@ -171,8 +171,8 @@
 }
 
 .ai-status.active {
-    background-color: #e6f4ea;
-    color: #137333;
+    background-color: var(--primary-lighter);
+    color: var(--primary-darker);
 }
 
 .ai-status.inactive {
@@ -198,7 +198,7 @@
 }
 
 .view-chat-btn:hover {
-    background-color: #f1f3f4;
+    background-color: var(--secondary-color);
 }
 
 .ai-metrics {
@@ -206,7 +206,7 @@
     align-items: center;
     gap: 12px;
     margin: 8px 0;
-    color: #5f6368;
+    color: var(--text-secondary);
 }
 
 .ai-metrics i {
@@ -223,7 +223,7 @@
     border-radius: 6px;
     margin-top: 8px;
     font-size: 13px;
-    color: #1a73e8;
+    color: var(--primary-color);
 }
 
 .action-buttons {
@@ -239,22 +239,13 @@
 .adjust-ai-btn {
     background: none;
     border: none;
-    color: #5f6368;
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 4px;
     cursor: pointer;
     padding: 8px;
     border-radius: 4px;
-}
-
-.export-btn {
-    transition: background-color 0.2s ease, transform 0.2s ease;
-}
-
-.export-btn:hover {
-    background-color: #1557b0;
-    transform: translateY(-1px);
 }
 
 .metrics-grid {
@@ -291,7 +282,7 @@
     display: flex;
     gap: 16px;
     margin-top: 8px;
-    color: #5f6368;
+    color: var(--text-secondary);
     font-size: 13px;
 }
 
@@ -333,22 +324,22 @@
 }
 
 .metric-icon {
+    background: var(--primary-color);
+    color: white;
     width: 48px;
     height: 48px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--primary-color);
-    color: white;
 }
 
 .metric-icon.satisfaction {
-    background: #1a73e8;
+    background: var(--primary-color);
 }
 
 .metric-icon.response {
-    background: #1a73e8;
+    background: var(--primary-color);
 }
 
 .metric-info h3 {
@@ -379,8 +370,8 @@
 
 .card-header {
     padding: 16px 20px;
-    border-bottom: 1px solid #dadce0;
-    background: #fff;
+    border-bottom: 1px solid var(--border-color);
+    background: white;
     border-radius: 8px 8px 0 0;
 }
 
@@ -402,9 +393,9 @@
     gap: 8px;
     padding: 8px 16px;
     border-radius: 4px;
-    border: 1px solid #dadce0;
+    border: 1px solid var(--border-color);
     background: white;
-    color: #5f6368;
+    color: var(--text-secondary);
     cursor: pointer;
     font-size: 14px;
 } 

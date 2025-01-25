@@ -71,31 +71,8 @@
 
 /* Status Legend */
 .status-legend {
-    display: flex;
-    gap: 24px;
-    margin-bottom: 24px;
+    display: none;
 }
-
-.status-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: #5f6368;
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-}
-
-/* Status Colors */
-.status-dot.ongoing { background-color: #4285F4; }
-.status-dot.new { background-color: #34A853; }
-.status-dot.followup { background-color: #FBBC05; }
-.status-dot.ai-ready { background-color: #1a73e8; }
 
 /* Patients Table */
 .patients-table {
@@ -236,4 +213,94 @@ th {
 
 .export-btn:hover {
     background-color: #1557b0;
-} 
+}
+
+/* Emotion Indicator Styles */
+.emotion-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    width: fit-content;
+    transition: all 0.3s ease;
+}
+
+/* Emotion-specific colors */
+.emotion-indicator.anxious {
+    background-color: rgba(114, 128, 255, 0.1);
+}
+
+.emotion-indicator.happy {
+    background-color: rgba(255, 179, 71, 0.1);
+}
+
+.emotion-indicator.depressed {
+    background-color: rgba(100, 149, 237, 0.1);
+}
+
+.emotion-indicator.angry {
+    background-color: rgba(255, 105, 97, 0.1);
+}
+
+.emotion-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.emotion-text.anxious {
+    color: #7280ff;
+}
+
+.emotion-text.happy {
+    color: #FFB347;
+}
+
+.emotion-text.depressed {
+    color: #6495ED;
+}
+
+.emotion-text.angry {
+    color: #FF6961;
+}
+
+/* Hover effects */
+.emotion-indicator:hover {
+    transform: translateY(-1px);
+}
+
+.emotion-indicator.anxious:hover {
+    background-color: rgba(114, 128, 255, 0.15);
+}
+
+.emotion-indicator.happy:hover {
+    background-color: rgba(255, 179, 71, 0.15);
+}
+
+.emotion-indicator.depressed:hover {
+    background-color: rgba(100, 149, 237, 0.15);
+}
+
+.emotion-indicator.angry:hover {
+    background-color: rgba(255, 105, 97, 0.15);
+}
+
+/* Animation for emotion changes */
+.emotion-indicator svg {
+    transition: transform 0.3s ease;
+}
+
+.emotion-indicator:hover svg {
+    transform: scale(1.1);
+}
+
+.emotion-indicator svg path {
+    transition: d 0.3s ease;
+}
+
+/* Remove old status styles */
+.status-legend {
+    display: none;
+}
+
+/* Rest of existing styles... */ 
