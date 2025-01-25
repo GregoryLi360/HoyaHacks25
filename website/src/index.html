@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Dashboard</title>
+    <!-- External stylesheets -->
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/patients.css">
+    <link rel="stylesheet" href="components/modals/modals.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <!-- Hospital Logo and Name -->
+            <div class="logo">
+                <img src="https://via.placeholder.com/32" alt="Hospital Logo">
+                <span>Medical Center</span>
+            </div>
+            <!-- Main Navigation Links -->
+            <ul class="nav-links">
+                <li data-section="dashboard">
+                    <i class="material-icons">dashboard</i>
+                    <span>Dashboard</span>
+                </li>
+                <li data-section="patients">
+                    <i class="material-icons">people</i>
+                    <span>Patients</span>
+                </li>
+                <li>
+                    <i class="material-icons">local_hospital</i>
+                    <span>Doctors</span>
+                </li>
+                <li>
+                    <i class="material-icons">assessment</i>
+                    <span>Analytics</span>
+                </li>
+                <li>
+                    <i class="material-icons">settings</i>
+                    <span>Settings</span>
+                </li>
+            </ul>
+        </nav>
+        
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header with Search and Add Patient -->
+            <header>
+                <div class="search-bar">
+                    <i class="material-icons">search</i>
+                    <input type="text" placeholder="Search patients...">
+                </div>
+                <button id="addPatientBtn" class="add-patient-btn">
+                    <i class="material-icons">add</i>
+                    Add New Patient
+                </button>
+            </header>
+
+            <!-- Content sections -->
+            <div id="dashboard-section" class="content-section">
+                <!-- Dashboard content will be loaded here -->
+            </div>
+
+            <div id="patients-section" class="content-section">
+                <!-- Patients list content -->
+            </div>
+            
+            <!-- Other sections -->
+            <div class="content-section" id="doctors-section">
+                <h2>Doctors List</h2>
+                <!-- TODO: Add doctors list implementation -->
+            </div>
+
+            <div class="content-section" id="analytics-section">
+                <h2>Analytics Dashboard</h2>
+                <!-- TODO: Add analytics implementation -->
+            </div>
+
+            <div class="content-section" id="settings-section">
+                <h2>Settings</h2>
+                <!-- TODO: Add settings implementation -->
+            </div>
+        </main>
+    </div>
+    <!-- Load scripts traditionally -->
+    <script type="module" src="script.js"></script>
+    <!-- Add this after main-content div but before closing body tag -->
+    <div id="addPatientModal" class="modal">
+        <div class="modal-content">
+            <!-- Content will be injected by components.js -->
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,201 @@
+/* Patients Section Styles */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    gap: 16px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #5f6368;
+    font-weight: 500;
+    position: relative;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+/* Header Action Buttons */
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.download-btn, .filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.download-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.filter-btn {
+    background-color: white;
+    border: 1px solid var(--border-color);
+}
+
+.more-btn {
+    padding: 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+/* Status Legend */
+.status-legend {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #5f6368;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Status Colors */
+.status-dot.discharged { background-color: #34A853; }
+.status-dot.expected { background-color: #9C27B0; }
+.status-dot.extra { background-color: #EA4335; }
+.status-dot.surgery { background-color: #4285F4; }
+.status-dot.in-surgery { background-color: #FBBC05; }
+.status-dot.unavailable { background-color: #9AA0A6; }
+
+/* Patients Table */
+.patients-table {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+th {
+    color: #5f6368;
+    font-weight: 500;
+    background-color: #f8f9fa;
+}
+
+/* Patient Info in Table */
+.patient-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.patient-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+/* Status Tags */
+.status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.status.extra {
+    background-color: #FCEAE9;
+    color: #EA4335;
+}
+
+/* Action Buttons */
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.icon-btn {
+    padding: 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #5f6368;
+    border-radius: 4px;
+}
+
+.icon-btn:hover {
+    background-color: #f8f9fa;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.page-btn {
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.page-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.page-info {
+    margin-left: 16px;
+    color: #5f6368;
+    font-size: 14px;
+}
+
+/* ... (rest of the patients-specific styles from styles.css) ... */ 
