@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Define utility functions
         window.closeModal = () => {
             const modal = document.getElementById('addPatientModal');
+            console.log('Closing modal');
             if (!modal || modal.style.display === 'none') return;
             modal.classList.remove('show');
             setTimeout(() => {
@@ -23,8 +24,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, 300);
         };
 
+        // Add escape key handler
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.closeModal();
+            }
+        });
+
         window.showNotification = () => {
             const notification = document.querySelector('.notification-banner');
+            console.log('Showing notification');
             notification.classList.add('show');
             setTimeout(() => {
                 notification.classList.remove('show');
@@ -115,105 +124,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function attachEventListeners() {
-    // Form submission handler
-    const newPatientForm = document.getElementById('newPatientForm');
-    console.log('Found form:', newPatientForm);
-
-    if (newPatientForm) {
-        newPatientForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            console.log('Form submitted');
-            
-            // Get all form fields
-            const formFields = {
-                firstName: document.getElementById('firstName'),
-                lastName: document.getElementById('lastName'),
-                diagnosis: document.getElementById('diagnosis'),
-                treatmentPhase: document.getElementById('treatmentPhase'),
-                notes: document.getElementById('notes'),
-                vitals: document.getElementById('vitals'),
-                medications: document.getElementById('medications')
-            };
-            
-            // Debug log available fields
-            console.log('Available form fields:', formFields);
-            
-            const patientData = {
-                firstName: formFields.firstName?.value || '',
-                lastName: formFields.lastName?.value || '',
-                diagnosis: formFields.diagnosis?.value || '',
-                treatmentPhase: formFields.treatmentPhase?.value || '',
-                notes: formFields.notes?.value || '',
-                vitals: formFields.vitals?.value || '',
-                medications: formFields.medications?.value || '',
-                dateAdmitted: new Date().toISOString(),
-            };
-
-            console.log('Patient Data JSON:', JSON.stringify(patientData, null, 2));
-            console.log('Attempting to close modal...');
-            window.closeModal();
-            console.log('Attempting to show notification...');
-            window.showNotification();
-        });
-    }
-
     // Modal controls
     const addPatientBtn = document.getElementById('addPatientBtn');
-    const closeModalBtn = document.querySelector('.close-modal');
     const modal = document.getElementById('addPatientModal');
-    const cancelBtn = document.querySelector('.btn-secondary');
-
-    console.log('Modal elements:', {
-        addPatientBtn,
-        closeModalBtn,
-        modal,
-        cancelBtn
-    });
 
     if (addPatientBtn && modal) {
         addPatientBtn.addEventListener('click', () => {
-            console.log('Opening modal...');
             modal.style.display = 'flex';
             modal.offsetHeight;
             modal.classList.add('show');
         });
     }
 
-    // Close modal when clicking outside
+    // Modal close handlers
     if (modal) {
+        // Close modal when clicking outside
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
-                console.log('Clicked outside modal, closing...');
+                window.closeModal();
+            }
+        });
+
+        // Close modal with escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
                 window.closeModal();
             }
         });
     }
 
-    // Handle notification
+    // Handle notification close button
     const notification = document.querySelector('.notification-banner');
-    console.log('Found notification banner:', notification);
-
-    window.closeModal = () => {
-        const modal = document.getElementById('addPatientModal');
-        console.log('Closing modal:', modal);
-        if (!modal || modal.style.display === 'none') return;
-        modal.classList.remove('show');
-        setTimeout(() => {
-            modal.style.display = 'none';
-            const form = document.getElementById('newPatientForm');
-            if (form) form.reset();
-            console.log('Modal closed and form reset');
-        }, 300);
-    };
-
-    window.showNotification = () => {
-        const notification = document.querySelector('.notification-banner');
-        console.log('Showing notification:', notification);
-        notification.classList.add('show');
-        setTimeout(() => {
+    const closeNotificationBtn = notification?.querySelector('.close-notification');
+    if (closeNotificationBtn) {
+        closeNotificationBtn.addEventListener('click', () => {
             notification.classList.remove('show');
-            console.log('Notification hidden');
-        }, 3000);
-    };
+        });
+    }
+
+    // Handle all modal close buttons (both X and Cancel)
+    const closeModalBtns = modal?.querySelectorAll('.close-modal');
+    if (closeModalBtns) {
+        closeModalBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.closeModal();
+            });
+        });
+    }
 } 

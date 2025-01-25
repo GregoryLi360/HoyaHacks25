@@ -384,6 +384,14 @@ header {
     border: none;
     cursor: pointer;
     color: #5f6368;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.close-modal:hover {
+    background-color: #f1f3f4;
+    color: #202124;
 }
 
 /* Notification Banner */
@@ -402,12 +410,13 @@ header {
     transform: translateX(120%);
     opacity: 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: auto;
+    pointer-events: none;
 }
 
 .notification-banner.show {
     transform: translateX(0);
     opacity: 1;
+    pointer-events: auto;
 }
 
 .notification-banner .success-icon {
@@ -420,15 +429,20 @@ header {
 }
 
 .notification-banner .close-notification {
-    padding: 4px;
+    padding: 8px;
     background: none;
     border: none;
     cursor: pointer;
     color: #5f6368;
-    margin-left: 8px;
-    transition: color 0.2s ease;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    margin-left: auto;
 }
 
 .notification-banner .close-notification:hover {
+    background-color: #f1f3f4;
     color: #202124;
 } 

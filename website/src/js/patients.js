@@ -3,10 +3,6 @@ export function loadPatientsSection() {
     const patientsSection = document.getElementById('patients-section');
     patientsSection.innerHTML = `
         <div class="section-header">
-            <div class="tab-navigation">
-                <button class="tab-btn active">Overview</button>
-                <button class="tab-btn">Patients</button>
-            </div>
             <div class="header-actions">
                 <button class="filter-btn">
                     <i class="material-icons">filter_list</i>
