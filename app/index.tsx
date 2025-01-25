@@ -2,46 +2,34 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
-  Button,
+  TouchableOpacity,
   StyleSheet,
   ScrollView,
   SafeAreaView,
   LayoutAnimation,
+  ActivityIndicator,
+  Image,
 } from "react-native";
-
+import { Ionicons } from '@expo/vector-icons';
 import { HumeClient, type Hume } from "hume";
-import NativeAudio, { AudioEventPayload } from "..//modules/audio/src/AudioModule";
+import NativeAudio, { AudioEventPayload } from "../modules/audio/src/AudioModule";
 
-// Chat message type definition
 interface ChatEntry {
   role: "user" | "assistant";
   timestamp: string;
   content: string;
 }
 
-// Hume client initialization with API key
 const humeClientWithApiKey = () => {
   return new HumeClient({
     apiKey: process.env.EXPO_PUBLIC_HUME_API_KEY || "",
   });
 }
 
-// Production client with token authentication
-const humeClientWithAccessToken = async () => {
-  const url = process.env.EXPO_PUBLIC_MY_SERVER_AUTH_URL
-  if (!url) {
-    throw new Error("Please set EXPO_PUBLIC_MY_SERVER in your .env file");
-  }
-  const response = await fetch(url);
-  const { accessToken } = await response.json();
-  return new HumeClient({
-    accessToken,
-  });
-}
-
 export default function ChatScreen() {
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [chatEntries, setChatEntries] = useState<ChatEntry[]>([]);
   const humeRef = useRef<HumeClient | null>(null);
   const scrollViewRef = useRef<ScrollView | null>(null);
@@ -52,11 +40,9 @@ export default function ChatScreen() {
   };
 
   const startClient = async () => {
-    // For development only
     humeRef.current = humeClientWithApiKey();
   }
 
-  // Auto-scroll chat
   useEffect(() => {
     if (scrollViewRef.current) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -65,54 +51,63 @@ export default function ChatScreen() {
   }, [chatEntries]);
 
   const handleConnect = async () => {
-    await startClient();
-    const hume = humeRef.current!;
+    setIsLoading(true);
     try {
+      await startClient();
+      const hume = humeRef.current!;
       await NativeAudio.getPermissions();
-    } catch (error) {
-      console.error("Failed to get permissions:", error);
-    }
 
-    const chatSocket = hume.empathicVoice.chat.connect({
-      configId: process.env.EXPO_PUBLIC_HUME_CONFIG_ID,
-    });
-
-    chatSocket.on("open", () => {
-      NativeAudio.startRecording().catch(error => {
-        console.error("Failed to start recording:", error);
+      const chatSocket = hume.empathicVoice.chat.connect({
+        configId: process.env.EXPO_PUBLIC_HUME_CONFIG_ID,
       });
-      if (NativeAudio.isLinear16PCM) {
-        chatSocket.sendSessionSettings({
-          audio: {
-            encoding: "linear16",
-            channels: 1,
-            sampleRate: NativeAudio.sampleRate,
-          },
+
+      chatSocket.on("open", () => {
+        NativeAudio.startRecording().catch(error => {
+          console.error("Failed to start recording:", error);
         });
-      }
-    });
-
-    chatSocket.on("message", handleIncomingMessage);
-    chatSocket.on("error", (error) => {
-      console.error("WebSocket Error:", error);
-    });
-    chatSocket.on("close", () => {
-      setIsConnected(false);
-    });
-
-    chatSocketRef.current = chatSocket;
-
-    NativeAudio.addListener('onAudioInput',
-      ({ base64EncodedAudio }: AudioEventPayload) => {
-        if (chatSocket.readyState !== WebSocket.OPEN) {
-          return;
+        if (NativeAudio.isLinear16PCM) {
+          chatSocket.sendSessionSettings({
+            audio: {
+              encoding: "linear16",
+              channels: 1,
+              sampleRate: NativeAudio.sampleRate,
+            },
+          });
         }
-        chatSocket.sendAudioInput({ data: base64EncodedAudio });
-      }
-    );
-    NativeAudio.addListener('onError', ({ message }) => {
-      console.error("NativeAudio Error:", message);
-    });
+        setIsConnected(true);
+        addChatEntry({
+          role: "assistant",
+          timestamp: new Date().toString(),
+          content: "Hello! I'm your medical assistant. How can I help you today?",
+        });
+      });
+
+      chatSocket.on("message", handleIncomingMessage);
+      chatSocket.on("error", (error) => {
+        console.error("WebSocket Error:", error);
+      });
+      chatSocket.on("close", () => {
+        setIsConnected(false);
+      });
+
+      chatSocketRef.current = chatSocket;
+
+      NativeAudio.addListener('onAudioInput',
+        ({ base64EncodedAudio }: AudioEventPayload) => {
+          if (chatSocket.readyState !== WebSocket.OPEN) {
+            return;
+          }
+          chatSocket.sendAudioInput({ data: base64EncodedAudio });
+        }
+      );
+      NativeAudio.addListener('onError', ({ message }) => {
+        console.error("NativeAudio Error:", message);
+      });
+    } catch (error) {
+      console.error("Connection error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDisconnect = async () => {
@@ -141,10 +136,7 @@ export default function ChatScreen() {
       NativeAudio.stopRecording().catch((error: any) => {
         console.error("Error while stopping recording", error);
       });
-      if (
-        chatSocketRef.current &&
-        chatSocketRef.current.readyState === WebSocket.OPEN
-      ) {
+      if (chatSocketRef.current?.readyState === WebSocket.OPEN) {
         chatSocketRef.current?.close();
       }
     };
@@ -177,7 +169,6 @@ export default function ChatScreen() {
         console.log("Received chat metadata:", message);
         break;
       case "audio_output":
-        console.log('Attempting to enqueue audio')
         await NativeAudio.enqueueAudio(message.data);
         break;
       case "user_message":
@@ -186,9 +177,6 @@ export default function ChatScreen() {
           message.message.role !== "user" &&
           message.message.role !== "assistant"
         ) {
-          console.error(
-            `Unhandled: received message with role: ${message.message.role}`
-          );
           return;
         }
         if (message.type === "user_message") {
@@ -217,101 +205,211 @@ export default function ChatScreen() {
   };
 
   return (
-    <View style={styles.appBackground}>
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerText}>
-            You are {isConnected ? "connected" : "disconnected"}
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Image 
+          source={require('../assets/images/icon.png')} 
+          style={styles.logo}
+        />
+        <Text style={styles.headerTitle}>Medical Assistant</Text>
+        <View style={styles.connectionStatus}>
+          <View style={[styles.statusDot, isConnected ? styles.connected : styles.disconnected]} />
+          <Text style={styles.statusText}>
+            {isConnected ? "Connected" : "Disconnected"}
           </Text>
         </View>
-        <ScrollView style={styles.chatDisplay} ref={scrollViewRef}>
-          {chatEntries.map((entry, index) => (
-            <View
-              key={index}
-              style={[
-                styles.chatEntry,
-                entry.role === "user"
-                  ? styles.userChatEntry
-                  : styles.assistantChatEntry,
-              ]}
+      </View>
+
+      <ScrollView 
+        style={styles.chatDisplay} 
+        ref={scrollViewRef}
+        contentContainerStyle={styles.chatContent}
+      >
+        {chatEntries.map((entry, index) => (
+          <View
+            key={index}
+            style={[
+              styles.chatEntry,
+              entry.role === "user"
+                ? styles.userChatEntry
+                : styles.assistantChatEntry,
+            ]}
+          >
+            {entry.role === "assistant" && (
+              <View style={styles.assistantHeader}>
+                <Ionicons name="medical" size={20} color="#4A90E2" />
+                <Text style={styles.assistantName}>Medical Assistant</Text>
+              </View>
+            )}
+            <Text style={styles.chatText}>{entry.content}</Text>
+          </View>
+        ))}
+      </ScrollView>
+
+      <View style={styles.footer}>
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#4A90E2" />
+        ) : (
+          <View style={styles.controls}>
+            <TouchableOpacity
+              style={[styles.button, isConnected ? styles.buttonDanger : styles.buttonPrimary]}
+              onPress={() => setIsConnected(!isConnected)}
             >
-              <Text style={styles.chatText}>{entry.content}</Text>
-            </View>
-          ))}
-        </ScrollView>
-        <View style={styles.buttonContainer}>
-          <Button
-            title={isConnected ? "Disconnect" : "Connect"}
-            onPress={() => setIsConnected(!isConnected)}
-          />
-          <Button
-            title={isMuted ? "Unmute" : "Mute"}
-            onPress={() => setIsMuted(!isMuted)}
-          />
-        </View>
-      </SafeAreaView>
-    </View>
+              <Ionicons 
+                name={isConnected ? "power" : "power-outline"} 
+                size={24} 
+                color="white" 
+              />
+              <Text style={styles.buttonText}>
+                {isConnected ? "End Session" : "Start Session"}
+              </Text>
+            </TouchableOpacity>
+
+            {isConnected && (
+              <TouchableOpacity
+                style={[styles.button, styles.buttonSecondary]}
+                onPress={() => setIsMuted(!isMuted)}
+              >
+                <Ionicons 
+                  name={isMuted ? "mic-off" : "mic"} 
+                  size={24} 
+                  color="white" 
+                />
+                <Text style={styles.buttonText}>
+                  {isMuted ? "Unmute" : "Mute"}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  appBackground: {
-    flex: 1,
-    backgroundColor: "rgb(255, 244, 232)",
-    alignItems: "center",
-  },
   container: {
     flex: 1,
-    justifyContent: "center",
-    padding: 16,
-    maxWidth: 600,
-    width: "100%",
+    backgroundColor: "#F5F7FA",
   },
   header: {
-    marginBottom: 16,
-    alignItems: "center",
+    padding: 16,
+    backgroundColor: "white",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E1E8ED",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  headerText: {
-    fontSize: 18,
-    fontWeight: "bold",
+  logo: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#1A1A1A",
+  },
+  connectionStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  connected: {
+    backgroundColor: "#4CAF50",
+  },
+  disconnected: {
+    backgroundColor: "#FF5252",
+  },
+  statusText: {
+    fontSize: 14,
+    color: "#666",
   },
   chatDisplay: {
     flex: 1,
-    width: "100%",
-    marginBottom: 16,
+  },
+  chatContent: {
+    padding: 16,
   },
   chatEntry: {
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 15,
-    maxWidth: "75%",
+    padding: 16,
+    marginVertical: 8,
+    borderRadius: 12,
+    maxWidth: "85%",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 4,
     elevation: 3,
   },
   userChatEntry: {
-    backgroundColor: "rgb(209, 226, 243)",
+    backgroundColor: "#4A90E2",
     alignSelf: "flex-end",
-    marginRight: 10,
+    marginLeft: "15%",
   },
   assistantChatEntry: {
-    backgroundColor: "#fff",
+    backgroundColor: "white",
     alignSelf: "flex-start",
-    marginLeft: 10,
+    marginRight: "15%",
+  },
+  assistantHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  assistantName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#4A90E2",
+    marginLeft: 6,
   },
   chatText: {
     fontSize: 16,
+    lineHeight: 22,
+    color: "#1A1A1A",
   },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+  footer: {
+    padding: 16,
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#E1E8ED",
+  },
+  controls: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    minWidth: 150,
+  },
+  buttonPrimary: {
+    backgroundColor: "#4A90E2",
+  },
+  buttonSecondary: {
+    backgroundColor: "#738A94",
+  },
+  buttonDanger: {
+    backgroundColor: "#FF5252",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
   },
 });
