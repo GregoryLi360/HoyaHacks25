@@ -35,7 +35,7 @@ interface DoctorToken {
 }
 
 const dataSchema = new mongoose.Schema<PatientData>({
-    MRN: { type: String, required: true, index: true },
+    MRN: { type: String, required: true, index: { unique: false } },
     firstName: String,
     lastName: String,
     diagnosis: String,
@@ -113,9 +113,9 @@ router.post('/patients', async (req, res) => {
 
     try {
         const medicalRecordNumber = req.body.MRN;
-        const patientNewData: PatientData = req.body;
-        const exisitingPatient: PatientData | {} = await Data.findOne({ MRN: medicalRecordNumber }) || {};
-        const patientData: PatientData = { ...exisitingPatient, ...patientNewData };
+        const patientData: PatientData = req.body;
+        // const exisitingPatient: PatientData | {} = await Data.findOne({ MRN: medicalRecordNumber }) || {};
+        // const patientData: PatientData = { ...exisitingPatient, ...patientNewData };
 
         const data = new Data(patientData);
         await data.save();
