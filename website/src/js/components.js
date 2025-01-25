@@ -1,7 +1,7 @@
 // Component loader utility
 export async function loadComponent(path) {
     try {
-        const response = await fetch(`/src${path}.html`);
+        const response = await fetch(`${path}.html`);
         const html = await response.text();
         return html;
     } catch (error) {
