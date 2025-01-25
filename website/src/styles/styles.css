@@ -1,3 +1,6 @@
+/* DEBUG */
+@import url('../components/dashboard/dashboard.css');
+
 /* Global Variables */
 :root {
     --primary-color: #1a73e8;
@@ -35,9 +38,8 @@
 .logo {
     display: flex;
     align-items: center;
+    padding: 20px;
     gap: 12px;
-    padding: 8px;
-    margin-bottom: 30px;
 }
 
 .logo img {
@@ -50,6 +52,16 @@
     font-size: 18px;
     font-weight: 500;
     color: var(--text-color);
+}
+
+.logo svg {
+    min-width: 32px;
+    height: 32px;
+    transition: transform 0.3s ease;
+}
+
+.logo:hover svg {
+    transform: scale(1.1);
 }
 
 /* Navigation Links */
@@ -131,6 +143,28 @@ header {
     padding: 12px 24px;
     border-radius: 24px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    transform-origin: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.add-patient-btn:hover {
+    background-color: #1557b0;
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.add-patient-btn:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.add-patient-btn i {
+    transition: transform 0.2s ease;
+}
+
+.add-patient-btn:hover i {
+    transform: rotate(90deg);
 }
 
 /* Patient Form Styles */
@@ -192,10 +226,19 @@ header {
 /* Content Section Display */
 .content-section {
     display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .content-section.active {
-    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Ensure sections are visible before animation */
+.content-section[style*="display: block"] {
+    display: block !important;
 }
 
 /* Import component styles */
@@ -341,4 +384,51 @@ header {
     border: none;
     cursor: pointer;
     color: #5f6368;
+}
+
+/* Notification Banner */
+.notification-banner {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+}
+
+.notification-banner.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification-banner .success-icon {
+    color: #34A853;
+}
+
+.notification-banner .message {
+    color: #202124;
+    font-size: 14px;
+}
+
+.notification-banner .close-notification {
+    padding: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #5f6368;
+    margin-left: 8px;
+    transition: color 0.2s ease;
+}
+
+.notification-banner .close-notification:hover {
+    color: #202124;
 } 

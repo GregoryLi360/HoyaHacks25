@@ -1,36 +1,29 @@
 // Remove the class and just keep the function
 export function loadPatientsSection() {
-    console.log('Loading patients section...');
-    const patientsHtml = `
+    const patientsSection = document.getElementById('patients-section');
+    patientsSection.innerHTML = `
         <div class="section-header">
             <div class="tab-navigation">
                 <button class="tab-btn active">Overview</button>
                 <button class="tab-btn">Patients</button>
-                <button class="tab-btn">Hospital</button>
-                <button class="tab-btn">Doctors</button>
             </div>
             <div class="header-actions">
-                <button class="download-btn">
-                    <i class="material-icons">download</i>
-                    Download Report
-                </button>
                 <button class="filter-btn">
                     <i class="material-icons">filter_list</i>
                     Filter
                 </button>
-                <button class="more-btn">
-                    <i class="material-icons">more_vert</i>
+                <button class="export-btn">
+                    <i class="material-icons">upload</i>
+                    Export to AI
                 </button>
             </div>
         </div>
 
         <div class="status-legend">
-            <span class="status-item"><i class="status-dot discharged"></i> Discharged</span>
-            <span class="status-item"><i class="status-dot expected"></i> Supposed time of hospitalization</span>
-            <span class="status-item"><i class="status-dot extra"></i> Extra hospitalization</span>
-            <span class="status-item"><i class="status-dot surgery"></i> Surgical intervention</span>
-            <span class="status-item"><i class="status-dot in-surgery"></i> In surgery</span>
-            <span class="status-item"><i class="status-dot unavailable"></i> Unavailable</span>
+            <span class="status-item"><i class="status-dot ongoing"></i> Ongoing Treatment</span>
+            <span class="status-item"><i class="status-dot new"></i> New Patient</span>
+            <span class="status-item"><i class="status-dot followup"></i> Follow-up</span>
+            <span class="status-item"><i class="status-dot ai-ready"></i> AI Ready</span>
         </div>
 
         <div class="patients-table">
@@ -39,9 +32,8 @@ export function loadPatientsSection() {
                     <tr>
                         <th>Name</th>
                         <th>Date</th>
-                        <th>Room</th>
+                        <th>Diagnosis</th>
                         <th>Condition</th>
-                        <th>Insurance ID</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -54,11 +46,10 @@ export function loadPatientsSection() {
                                 <span>Linda Kaberski</span>
                             </div>
                         </td>
-                        <td>02/11/2020</td>
-                        <td>Room 101</td>
-                        <td>Phase I Clinical Trial</td>
-                        <td>5678 1234-A</td>
-                        <td><span class="status extra">Ext. hospitalization</span></td>
+                        <td>02/11/2024</td>
+                        <td>Type 2 Diabetes</td>
+                        <td>Chronic Management</td>
+                        <td><span class="status ongoing">Ongoing Treatment</span></td>
                         <td class="actions">
                             <button class="icon-btn"><i class="material-icons">edit</i></button>
                             <button class="icon-btn"><i class="material-icons">delete</i></button>
@@ -79,8 +70,6 @@ export function loadPatientsSection() {
             </div>
         </div>
     `;
-    
-    document.getElementById('patients-section').innerHTML = patientsHtml;
 }
 
 async function loadComponent(path) {

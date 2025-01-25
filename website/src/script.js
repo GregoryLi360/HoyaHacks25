@@ -11,6 +11,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         await initializeDashboard();
         await initializeModal();
 
+        // Define utility functions
+        window.closeModal = () => {
+            const modal = document.getElementById('addPatientModal');
+            if (!modal || modal.style.display === 'none') return;
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                const form = document.getElementById('newPatientForm');
+                if (form) form.reset();
+            }, 300);
+        };
+
+        window.showNotification = () => {
+            const notification = document.querySelector('.notification-banner');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        };
+
         // Now that components are loaded, attach event listeners
         attachEventListeners();
     } catch (error) {
@@ -21,7 +41,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Sidebar links found:', sidebarLinks.length);
 
     // Show dashboard by default
-    document.getElementById('dashboard-section').style.display = 'block';
+    const dashboardSection = document.getElementById('dashboard-section');
+    if (dashboardSection) {
+        dashboardSection.style.display = 'block';
+        // Add small delay to trigger animation
+        setTimeout(() => {
+            dashboardSection.classList.add('active');
+        }, 10);
+    }
+    
     // Set dashboard link as active by default
     document.querySelector('.nav-links li[data-section="dashboard"]').classList.add('active');
 
@@ -32,14 +60,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Remove active class from all links
             document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
-            // Add active class to clicked link
             this.classList.add('active');
             
-            // Get section name
             const section = this.querySelector('span').textContent.toLowerCase();
             
-            // Hide all sections
-            document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+            // Get current active section
+            const currentSection = document.querySelector('.content-section.active');
+            
+            // Hide current section with transition
+            if (currentSection) {
+                currentSection.classList.remove('active');
+                await new Promise(resolve => setTimeout(resolve, 300)); // Wait for transition
+            }
+            
+            document.querySelectorAll('.content-section').forEach(s => {
+                s.style.display = 'none';
+            });
             
             try {
                 // Show selected section
@@ -48,12 +84,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const dashboardSection = document.getElementById('dashboard-section');
                         if (dashboardSection) {
                             dashboardSection.style.display = 'block';
-                            await initializeDashboard();
+                            requestAnimationFrame(() => {
+                                dashboardSection.classList.add('active');
+                            });
                         }
                         break;
                     case 'patients':
                         const patientsSection = document.getElementById('patients-section');
                         patientsSection.style.display = 'block';
+                        setTimeout(() => {
+                            patientsSection.classList.add('active');
+                        }, 10);
                         loadPatientsSection();
                         break;
                     case 'doctors':
@@ -76,25 +117,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 function attachEventListeners() {
     // Form submission handler
     const newPatientForm = document.getElementById('newPatientForm');
+    console.log('Found form:', newPatientForm);
+
     if (newPatientForm) {
         newPatientForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
+            console.log('Form submitted');
+            
+            // Get all form fields
+            const formFields = {
+                firstName: document.getElementById('firstName'),
+                lastName: document.getElementById('lastName'),
+                diagnosis: document.getElementById('diagnosis'),
+                treatmentPhase: document.getElementById('treatmentPhase'),
+                notes: document.getElementById('notes'),
+                vitals: document.getElementById('vitals'),
+                medications: document.getElementById('medications')
+            };
+            
+            // Debug log available fields
+            console.log('Available form fields:', formFields);
+            
             const patientData = {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                roomNumber: document.getElementById('roomNumber').value,
-                insuranceId: document.getElementById('insuranceId').value,
-                condition: document.getElementById('condition').value,
-                status: document.getElementById('status').value,
-                vitals: document.getElementById('vitals').value,
-                lastVisit: document.getElementById('lastVisit').value,
+                firstName: formFields.firstName?.value || '',
+                lastName: formFields.lastName?.value || '',
+                diagnosis: formFields.diagnosis?.value || '',
+                treatmentPhase: formFields.treatmentPhase?.value || '',
+                notes: formFields.notes?.value || '',
+                vitals: formFields.vitals?.value || '',
+                medications: formFields.medications?.value || '',
                 dateAdmitted: new Date().toISOString(),
             };
 
             console.log('Patient Data JSON:', JSON.stringify(patientData, null, 2));
-            this.reset();
-            alert('Patient data has been saved!');
+            console.log('Attempting to close modal...');
+            window.closeModal();
+            console.log('Attempting to show notification...');
+            window.showNotification();
         });
     }
 
@@ -102,18 +162,21 @@ function attachEventListeners() {
     const addPatientBtn = document.getElementById('addPatientBtn');
     const closeModalBtn = document.querySelector('.close-modal');
     const modal = document.getElementById('addPatientModal');
+    const cancelBtn = document.querySelector('.btn-secondary');
+
+    console.log('Modal elements:', {
+        addPatientBtn,
+        closeModalBtn,
+        modal,
+        cancelBtn
+    });
 
     if (addPatientBtn && modal) {
         addPatientBtn.addEventListener('click', () => {
+            console.log('Opening modal...');
             modal.style.display = 'flex';
-        });
-    } else {
-        console.error('Add patient button or modal not found', { addPatientBtn, modal });
-    }
-
-    if (closeModalBtn && modal) {
-        closeModalBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
+            modal.offsetHeight;
+            modal.classList.add('show');
         });
     }
 
@@ -121,8 +184,36 @@ function attachEventListeners() {
     if (modal) {
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
-                modal.style.display = 'none';
+                console.log('Clicked outside modal, closing...');
+                window.closeModal();
             }
         });
     }
+
+    // Handle notification
+    const notification = document.querySelector('.notification-banner');
+    console.log('Found notification banner:', notification);
+
+    window.closeModal = () => {
+        const modal = document.getElementById('addPatientModal');
+        console.log('Closing modal:', modal);
+        if (!modal || modal.style.display === 'none') return;
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            const form = document.getElementById('newPatientForm');
+            if (form) form.reset();
+            console.log('Modal closed and form reset');
+        }, 300);
+    };
+
+    window.showNotification = () => {
+        const notification = document.querySelector('.notification-banner');
+        console.log('Showing notification:', notification);
+        notification.classList.add('show');
+        setTimeout(() => {
+            notification.classList.remove('show');
+            console.log('Notification hidden');
+        }, 3000);
+    };
 } 

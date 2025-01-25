@@ -92,18 +92,16 @@
 }
 
 /* Status Colors */
-.status-dot.discharged { background-color: #34A853; }
-.status-dot.expected { background-color: #9C27B0; }
-.status-dot.extra { background-color: #EA4335; }
-.status-dot.surgery { background-color: #4285F4; }
-.status-dot.in-surgery { background-color: #FBBC05; }
-.status-dot.unavailable { background-color: #9AA0A6; }
+.status-dot.ongoing { background-color: #4285F4; }
+.status-dot.new { background-color: #34A853; }
+.status-dot.followup { background-color: #FBBC05; }
+.status-dot.ai-ready { background-color: #1a73e8; }
 
 /* Patients Table */
 .patients-table {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     overflow: hidden;
 }
 
@@ -145,9 +143,9 @@ th {
     font-size: 14px;
 }
 
-.status.extra {
-    background-color: #FCEAE9;
-    color: #EA4335;
+.status.ongoing {
+    background-color: #E8F0FE;
+    color: #4285F4;
 }
 
 /* Action Buttons */
@@ -157,16 +155,16 @@ th {
 }
 
 .icon-btn {
-    padding: 8px;
-    border: none;
     background: none;
+    border: none;
+    padding: 4px;
     cursor: pointer;
     color: #5f6368;
     border-radius: 4px;
 }
 
 .icon-btn:hover {
-    background-color: #f8f9fa;
+    background: #f1f3f4;
 }
 
 /* Pagination */
@@ -198,4 +196,42 @@ th {
     font-size: 14px;
 }
 
-/* ... (rest of the patients-specific styles from styles.css) ... */ 
+/* ... (rest of the patients-specific styles from styles.css) ... */
+
+.diagnosis-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.treatment-cell {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.condition-filter {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.export-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background-color: #1a73e8;
+    color: white;
+    transition: background-color 0.2s ease;
+}
+
+.export-btn:hover {
+    background-color: #1557b0;
+} 

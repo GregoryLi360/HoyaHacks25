@@ -17,46 +17,46 @@
             </div>
         </div>
 
-        <div class="form-row" data-title="Room and Insurance Information">
+        <div class="form-row" data-title="Medical Information">
             <div class="form-group">
-                <label for="roomNumber">Room Number</label>
-                <input type="text" id="roomNumber">
-            </div>
-            <div class="form-group">
-                <label for="insuranceId">Insurance ID</label>
-                <input type="text" id="insuranceId">
-            </div>
-        </div>
-
-        <div class="form-row" data-title="Medical Status">
-            <div class="form-group">
-                <label for="condition">Condition</label>
-                <select id="condition">
-                    <option value="phase1">Phase I Clinical Trial</option>
-                    <option value="phase2">Phase II Clinical Trial</option>
-                    <option value="phase3">Phase III Clinical Trial</option>
-                    <option value="critical">Critical Condition</option>
+                <label for="diagnosis">Primary Diagnosis</label>
+                <select id="diagnosis">
+                    <option value="chronic">Chronic Condition</option>
+                    <option value="acute">Acute Condition</option>
+                    <option value="preventive">Preventive Care</option>
+                    <option value="recovery">Recovery/Rehabilitation</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="status">Status</label>
-                <select id="status">
-                    <option value="admitted">Admitted</option>
-                    <option value="discharged">Discharged</option>
-                    <option value="surgery">In Surgery</option>
-                    <option value="intervention">Surgical Intervention</option>
+                <label for="treatmentPhase">Treatment Phase</label>
+                <select id="treatmentPhase">
+                    <option value="initial">Initial Treatment</option>
+                    <option value="ongoing">Ongoing Management</option>
+                    <option value="followup">Follow-up Care</option>
                 </select>
             </div>
         </div>
 
-        <div class="form-row" data-title="Vitals and Visit">
+        <div class="form-row" data-title="Clinical Information">
+            <div class="form-group full-width">
+                <label for="notes">Clinical Notes</label>
+                <textarea 
+                    id="notes" 
+                    placeholder="Enter detailed notes about patient's symptoms, treatment plan, and any relevant medical history..."
+                    rows="4"
+                    class="clinical-notes"
+                ></textarea>
+            </div>
+        </div>
+
+        <div class="form-row" data-title="Additional Information">
             <div class="form-group">
-                <label for="vitals">Vitals</label>
+                <label for="vitals">Current Vitals</label>
                 <input type="text" id="vitals" placeholder="BP: 120/80, HR: 72">
             </div>
             <div class="form-group">
-                <label for="lastVisit">Last Visit</label>
-                <input type="date" id="lastVisit">
+                <label for="medications">Current Medications</label>
+                <input type="text" id="medications" placeholder="List current medications">
             </div>
         </div>
 
