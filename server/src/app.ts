@@ -108,7 +108,7 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
 
 router.use(authenticateToken);
 
-router.post('/', async (req, res) => {
+router.post('/patients', async (req, res) => {
     console.log(req.body);
 
     try {
