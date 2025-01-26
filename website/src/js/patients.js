@@ -82,6 +82,7 @@ function editPatientHandler(patient) {
 // Create patient row HTML
 function createPatientRow(patient) {
     if (!patient) return null;
+    console.log(patient);
     
     // Safely get the first letter of first name, defaulting to '?'
     const initial = patient.firstName ? patient.firstName[0].toUpperCase() : '?';
@@ -245,11 +246,15 @@ function sortPatients(field) {
     buttons.forEach(btn => {
         const isCurrentField = btn.getAttribute('onclick').includes(field);
         if (isCurrentField) {
-            const displayName = field === 'dateAdmitted' ? 'Date' : field.charAt(0).toUpperCase() + field.slice(1);
+            const displayName = field === 'dateAdmitted' ? 'Date' : 
+                              field === 'mrn' ? 'MRN' : 
+                              field.charAt(0).toUpperCase() + field.slice(1);
             btn.innerHTML = `Sort by ${displayName}<span>${isAscending ? '↓' : '↑'}</span>`;
         } else {
             const fieldName = btn.getAttribute('onclick').match(/sortPatients\('(.+?)'\)/)[1];
-            const displayName = fieldName === 'dateAdmitted' ? 'Date' : fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+            const displayName = fieldName === 'dateAdmitted' ? 'Date' : 
+                              fieldName === 'mrn' ? 'MRN' : 
+                              fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
             btn.innerHTML = `Sort by ${displayName}`;
         }
     });

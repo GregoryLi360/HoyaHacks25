@@ -1,7 +1,10 @@
+import notificationManager from './notifications.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const togglePassword = document.querySelector('.toggle-password');
     const passwordInput = document.getElementById('password');
+    const usernameInput = document.getElementById('username');
 
     // Toggle password visibility
     if (togglePassword && passwordInput) {
@@ -12,35 +15,120 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Show error message
+    function showError(input, message) {
+        const formGroup = input.closest('.form-group');
+        const errorMessage = formGroup.querySelector('.error-message');
+        input.classList.add('error');
+        if (errorMessage) {
+            errorMessage.querySelector('span').textContent = message;
+            errorMessage.classList.add('show');
+        }
+    }
+
+    // Hide error message
+    function hideError(input) {
+        const formGroup = input.closest('.form-group');
+        const errorMessage = formGroup.querySelector('.error-message');
+        input.classList.remove('error');
+        if (errorMessage) {
+            errorMessage.classList.remove('show');
+        }
+    }
+
+    // Input validation handlers
+    if (usernameInput) {
+        usernameInput.addEventListener('input', () => {
+            if (!usernameInput.value.trim()) {
+                showError(usernameInput, 'Username is required');
+            } else {
+                hideError(usernameInput);
+            }
+        });
+
+        usernameInput.addEventListener('blur', () => {
+            if (!usernameInput.value.trim()) {
+                showError(usernameInput, 'Username is required');
+            }
+        });
+    }
+
+    if (passwordInput) {
+        passwordInput.addEventListener('input', () => {
+            if (!passwordInput.value) {
+                showError(passwordInput, 'Password is required');
+            } else {
+                hideError(passwordInput);
+            }
+        });
+
+        passwordInput.addEventListener('blur', () => {
+            if (!passwordInput.value) {
+                showError(passwordInput, 'Password is required');
+            }
+        });
+    }
+
     // Handle form submission
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
             const remember = document.getElementById('remember').checked;
 
-            try {
-                // TODO: Replace with actual authentication
-                // For now, just redirect to dashboard
-                console.log('Login attempt:', { email, remember });
-                
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                // Store auth token (replace with actual token)
-                if (remember) {
-                    localStorage.setItem('auth_token', 'dummy_token');
-                } else {
-                    sessionStorage.setItem('auth_token', 'dummy_token');
-                }
+            // Validate inputs
+            let hasErrors = false;
+            
+            if (!username) {
+                showError(usernameInput, 'Username is required');
+                hasErrors = true;
+            }
 
-                // Redirect to dashboard
-                window.location.href = '/dashboard.html';
+            if (!password) {
+                showError(passwordInput, 'Password is required');
+                hasErrors = true;
+            }
+
+            if (hasErrors) return;
+
+            try {
+                // Add loading state
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // For demo purposes, check if username/password match
+                if (username === 'admin' && password === 'admin') {
+                    // Store auth token
+                    const token = 'dummy_token';
+                    if (remember) {
+                        localStorage.setItem('auth_token', token);
+                    } else {
+                        sessionStorage.setItem('auth_token', token);
+                    }
+
+                    // Show success notification
+                    notificationManager.show('Login successful! Redirecting...', 'success');
+
+                    // Redirect to dashboard after a short delay
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1000);
+                } else {
+                    throw new Error('Invalid username or password');
+                }
             } catch (error) {
                 console.error('Login failed:', error);
-                // TODO: Show error message to user
+                notificationManager.show(error.message || 'Login failed. Please try again.', 'error');
+                
+                // Remove loading state
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
             }
         });
     }
