@@ -29,6 +29,11 @@ interface UIState {
   transitionDuration: number;
 }
 
+interface EmotionalState {
+  emotion: string;
+  score: number;
+}
+
 interface PatientData {
   MRN: string;
   firstName: string;
@@ -36,6 +41,9 @@ interface PatientData {
   diagnosis: string;
   notes: string;
   medications: string;
+  startTime: Date;
+  interactionTime: number;
+  emotionalState: EmotionalState;
   createdAt: Date;
 }
 
@@ -95,6 +103,9 @@ const emotionalUISettings = {
   }
 };
 
+const API_TOKEN = '05d49692b755f99c4504b510418efeeeebfd466892540f27acf9a31a326d6504';
+const HARDCODED_MRN = 'MRN123456'; // Hardcoded for now
+
 const mockPatientData: PatientData = {
   MRN: "MRN123456",
   firstName: "Sarah",
@@ -102,6 +113,12 @@ const mockPatientData: PatientData = {
   diagnosis: "Generalized Anxiety Disorder (GAD), Mild Depression",
   notes: "Patient reports increased anxiety in social situations. Shows good response to CBT. Regular exercise recommended. Sleep patterns have improved with current medication regimen.",
   medications: "Sertraline 50mg daily, Propranolol 10mg as needed for acute anxiety",
+  startTime: new Date(),
+  interactionTime: 0,
+  emotionalState: {
+    emotion: "neutral",
+    score: 0
+  },
   createdAt: new Date("2024-12-15")
 };
 
@@ -174,19 +191,20 @@ const VoiceLevelBars = ({ isConnected, isMuted }: { isConnected: boolean; isMute
 export default function ChatScreen() {
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [latestMessage, setLatestMessage] = useState<string>("Hello! I'm Baymax, your friendly health companion. How can I help you today?");
   const [uiState, setUIState] = useState<UIState>(defaultUIState);
   const [nextGradient, setNextGradient] = useState<string[]>(defaultUIState.gradientColors);
   const [currentEmotion, setCurrentEmotion] = useState<keyof typeof emotionalUISettings>("neutral");
   const [showBreathingExercise, setShowBreathingExercise] = useState(false);
+  const [patientData, setPatientData] = useState<PatientData | null>(null);
+  const [topEmotions, setTopEmotions] = useState<Array<{emotion: string, score: number}>>([]);
   const [breathingSequence, setBreathingSequence] = useState<Array<{pattern: 'inhale' | 'exhale' | 'hold', duration: number}>>([]);
   const [currentBreathIndex, setCurrentBreathIndex] = useState(0);
   const [breathingPattern, setBreathingPattern] = useState<'inhale' | 'exhale' | 'hold'>('inhale');
   const [breathingDuration, setBreathingDuration] = useState(4);
   const [isBreathingSession, setIsBreathingSession] = useState(false);
-  const [topEmotions, setTopEmotions] = useState<Array<{emotion: string, score: number}>>([]);
-  const [patientData, setPatientData] = useState<PatientData | null>(mockPatientData);
   const previousMuteState = useRef(false);
   const humeRef = useRef<HumeClient | null>(null);
   const chatSocketRef = useRef<Hume.empathicVoice.chat.ChatSocket | null>(null);
@@ -200,6 +218,8 @@ export default function ChatScreen() {
   const gradientProgress = useRef(new Animated.Value(0)).current;
   const previousGradient = useRef(defaultUIState.gradientColors);
   const pageOpacity = useRef(new Animated.Value(0)).current;
+  const sessionStartTime = useRef<Date>(new Date());
+  const lastUpdateTime = useRef<Date>(new Date());
 
   useEffect(() => {
     Animated.timing(pageOpacity, {
@@ -210,39 +230,36 @@ export default function ChatScreen() {
     }).start();
   }, []);
 
-  const animateTextChange = (newMessage: string, skipAnimation: boolean = false) => {
-    if (skipAnimation) {
-      setLatestMessage(newMessage);
-      return;
-    }
-
-    Animated.parallel([
-      Animated.timing(messageOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(textPositionAnimation, {
-        toValue: -20,
-        duration: 200,
-        useNativeDriver: true,
-      })
-    ]).start(() => {
-      setLatestMessage(newMessage);
-      textPositionAnimation.setValue(20);
-      
+  const animateTextChange = (newMessage: string) => {
+    return new Promise<void>((resolve) => {
       Animated.parallel([
         Animated.timing(messageOpacity, {
-          toValue: 1,
-          duration: 300,
+          toValue: 0,
+          duration: 200,
           useNativeDriver: true,
         }),
         Animated.timing(textPositionAnimation, {
-          toValue: 0,
-          duration: 300,
+          toValue: -20,
+          duration: 200,
           useNativeDriver: true,
         })
-      ]).start();
+      ]).start(() => {
+        setLatestMessage(newMessage);
+        textPositionAnimation.setValue(20);
+        
+        Animated.parallel([
+          Animated.timing(messageOpacity, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(textPositionAnimation, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          })
+        ]).start(() => resolve());
+      });
     });
   };
 
@@ -656,27 +673,86 @@ Notes: ${patientData.notes}`
     }
   };
 
-  const updatePatientData = async (newData: PatientData) => {
-    setPatientData(newData);
-    
-    if (isConnected && chatSocketRef.current?.readyState === WebSocket.OPEN) {
-      const sessionSettings = {
-        type: "session_settings",
-        system_prompt: getSystemPrompt(newData),
-        context: {
-          text: `Patient Information:
-MRN: ${newData.MRN}
-Name: ${newData.firstName} ${newData.lastName}
-Diagnosis: ${newData.diagnosis}
-Medications: ${newData.medications}
-Notes: ${newData.notes}`
+  const fetchPatientData = async () => {
+    try {
+      const response = await fetch(`https://hoyahacks25.onrender.com/api/patients/${HARDCODED_MRN}`, {
+        headers: {
+          'Authorization': `Bearer ${API_TOKEN}`,
         }
-      };
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Full response:', data);
+
+      if (!Array.isArray(data) || data.length === 0) {
+        console.error('No patient data found');
+        return;
+      }
+
+      // Get the most recent patient data (first element)
+      const patientData = data[0];
+      console.log('Using patient data:', patientData);
       
-      console.log("Updating session settings:", sessionSettings);
-      chatSocketRef.current.sendSessionSettings(sessionSettings);
+      if (!patientData.MRN) {
+        console.error('Invalid patient data format');
+        return;
+      }
+
+      setPatientData(patientData);
+    } catch (error) {
+      console.error('Error fetching patient data:', error);
     }
   };
+
+  const updatePatientData = async () => {
+    if (!patientData) return;
+
+    const now = new Date();
+    const interactionTime = Math.floor((now.getTime() - sessionStartTime.current.getTime()) / 1000);
+
+    try {
+      const response = await fetch("https://hoyahacks25.onrender.com/api/patients", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_TOKEN}`,
+        },
+        body: JSON.stringify({
+          MRN: HARDCODED_MRN,
+          startTime: sessionStartTime.current,
+          interactionTime,
+          emotionalState: currentEmotion
+        })
+        
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update patient data');
+      }
+
+      lastUpdateTime.current = now;
+    } catch (error) {
+      console.error('Error updating patient data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPatientData();
+  }, []);
+
+  useEffect(() => {
+    if (isConnected) {
+      const intervalId = setInterval(() => {
+        updatePatientData();
+      }, 30000); // Update every 30 seconds
+
+      return () => clearInterval(intervalId);
+    }
+  }, [isConnected, currentEmotion]);
 
   const updateUIForEmotion = (emotion: keyof typeof emotionalUISettings) => {
     const settings = emotionalUISettings[emotion];
@@ -699,6 +775,20 @@ Notes: ${newData.notes}`
     });
     
     setCurrentEmotion(emotion);
+  };
+
+  const DEFAULT_MESSAGE = "Hello! I'm Baymax, your friendly health companion. How can I help you today?";
+
+  const handleConnectButtonPress = async () => {
+    if (!isConnected) {
+      sessionStartTime.current = new Date();
+      lastUpdateTime.current = new Date();
+      await updatePatientData();
+      await animateTextChange("Listening...");
+    } else {
+      await animateTextChange(DEFAULT_MESSAGE);
+    }
+    setIsConnected(!isConnected);
   };
 
   return (
@@ -736,10 +826,7 @@ Notes: ${newData.notes}`
             <View style={styles.header}>
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={() => {
-                  setIsConnected(!isConnected);
-                  animateTextChange(isConnected ? "Press the radio to start" : "Listening...", true);
-                }}
+                onPress={handleConnectButtonPress}
               >
                 <Animated.View style={{ opacity: uiOpacity }}>
                   <Ionicons
