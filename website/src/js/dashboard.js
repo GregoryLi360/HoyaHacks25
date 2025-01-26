@@ -82,7 +82,8 @@ function createEmotionSVG(emotionalState) {
 // Create interaction row HTML
 function createInteractionRow(interaction) {
     const initial = interaction.firstName ? interaction.firstName[0].toUpperCase() : '?';
-    const emotionalState = emotionalStates[interaction.emotionalState] || emotionalStates.neutral;
+    const emotionKey = interaction.emotionalState || 'neutral';
+    const emotionalState = emotionalStates[emotionKey];
     
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -97,20 +98,20 @@ function createInteractionRow(interaction) {
         <td>
             <div class="interaction-time">
                 <i class="material-icons">schedule</i>
-                ${formatTime(interaction.interactionTime)}
+                ${formatTime(interaction.startTime)}
             </div>
         </td>
         <td>
             <div class="interaction-duration">
                 <i class="material-icons">timer</i>
-                ${formatDuration(interaction.startTime)}
+                ${formatDuration(interaction.interactionTime)}
             </div>
         </td>
         <td>
-            <div class="emotion-indicator ${emotionalState.state}">
+            <div class="emotion-indicator ${emotionKey}">
                 ${createEmotionSVG(emotionalState)}
-                <span class="emotion-text ${emotionalState.state}">
-                    ${emotionalState.state.charAt(0).toUpperCase() + emotionalState.state.slice(1)}
+                <span class="emotion-text ${emotionKey}">
+                    ${emotionKey.charAt(0).toUpperCase() + emotionKey.slice(1)}
                 </span>
             </div>
         </td>

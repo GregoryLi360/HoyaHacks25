@@ -1,34 +1,64 @@
 // Emotional states definition
 export const emotionalStates = {
     anxious: {
-        state: 'anxious',
-        color: '#90EE90',  // Light pastel green
-        lightColor: '#F0FFF0',  // Very light pastel green
-        path: 'M 8 15 C 8 15, 12 12, 16 15'  // Anxious mouth curve
-    },
-    happy: {
-        state: 'happy',
-        color: '#FFB347',
-        lightColor: '#FFF3E0',
-        path: 'M 8 13 C 8 13, 12 16, 16 13'
+        color: '#FFE0B2',
+        lightColor: '#FFF8F0',
+        path: 'M 8 15 C 8 15, 12 12, 16 15'  // Wavy anxious mouth
     },
     depressed: {
-        state: 'depressed',
-        color: '#6495ED',  // Cornflower blue
-        lightColor: '#F0F8FF',  // Light pastel blue
-        path: 'M 8 16 C 8 16, 12 13, 16 16'
-    },
-    angry: {
-        state: 'angry',
-        color: '#FF6961',
-        lightColor: '#FFF0F0',
-        path: 'M 8 16 C 8 16, 12 14, 16 16'
+        color: '#90CAF9',
+        lightColor: '#E3F2FD',
+        path: 'M 8 16 C 10 13, 14 13, 16 16'  // Proper rounded sad face
     },
     neutral: {
-        state: 'neutral',
-        color: '#7280ff',  // Periwinkle blue
-        lightColor: '#F0F3FF',  // Light periwinkle
-        path: 'M 8 14 L 16 14'
+        color: '#7280ff',
+        lightColor: '#F0F3FF',
+        path: 'M 8 15 L 16 15'  // Straight line
+    },
+    positive: {
+        color: '#A5D6A7',
+        lightColor: '#E8F5E9',
+        path: 'M 8 14 C 8 17, 16 17, 16 14'  // Wide smile
+    },
+    calm: {
+        color: '#CE93D8',
+        lightColor: '#F3E5F5',
+        path: 'M 8 15 C 8 16, 16 16, 16 15'  // Gentle smile
+    },
+    frustrated: {
+        color: '#EF9A9A',
+        lightColor: '#FFEBEE',
+        path: 'M 8 15 C 8 18, 12 19, 16 18'  // Stronger frown
+    },
+    hopeful: {
+        color: '#FFCC80',
+        lightColor: '#FFF3E0',
+        path: 'M 8 14 C 8 16, 16 16, 16 14'  // Optimistic curve
+    },
+    confident: {
+        color: '#80DEEA',
+        lightColor: '#E0F7FA',
+        path: 'M 8 13 C 8 17, 16 17, 16 13'  // Strong smile
+    },
+    tired: {
+        color: '#BCAAA4',
+        lightColor: '#EFEBE9',
+        path: 'M 8 15 C 8 14, 16 14, 16 15'  // Slight droop
+    },
+    excited: {
+        color: '#E6EE9C',
+        lightColor: '#F9FBE7',
+        path: 'M 8 13 C 8 18, 16 18, 16 13'  // Very wide smile
+    },
+    worried: {
+        color: '#9FA8DA',
+        lightColor: '#E8EAF6',
+        path: 'M 8 15 C 8 13, 16 13, 16 15'  // Inverted gentle curve
+    },
+    grateful: {
+        color: '#A5D6A7',
+        lightColor: '#E8F5E9',
+        path: 'M 8 14 C 8 17, 16 17, 16 14'  // Warm smile
     }
 };
 

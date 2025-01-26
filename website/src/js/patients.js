@@ -82,16 +82,17 @@ function editPatientHandler(patient) {
 // Create patient row HTML
 function createPatientRow(patient) {
     if (!patient) return null;
-    console.log(patient);
     
     // Safely get the first letter of first name, defaulting to '?'
     const initial = patient.firstName ? patient.firstName[0].toUpperCase() : '?';
+    const emotionKey = patient.emotionalState || 'neutral';
+    const emotionalState = emotionalStates[emotionKey];
     
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>
             <div class="patient-info">
-                <div class="patient-avatar" style="background-color: ${patient.emotionalState?.lightColor || '#F0F3FF'}">
+                <div class="patient-avatar" style="background-color: ${emotionalState.lightColor}">
                     ${initial}
                 </div>
                 <span>${patient.firstName || ''} ${patient.lastName || ''}</span>
@@ -101,10 +102,10 @@ function createPatientRow(patient) {
         <td>${patient.mrn || ''}</td>
         <td>${patient.diagnosis || ''}</td>
         <td>
-            <div class="emotion-indicator ${patient.emotionalState?.state || 'neutral'}">
-                ${createEmotionSVG(patient.emotionalState || emotionalStates.neutral)}
-                <span class="emotion-text ${patient.emotionalState?.state || 'neutral'}">
-                    ${(patient.emotionalState?.state || 'Neutral').charAt(0).toUpperCase() + (patient.emotionalState?.state || 'neutral').slice(1)}
+            <div class="emotion-indicator ${emotionKey}">
+                ${createEmotionSVG(emotionalState)}
+                <span class="emotion-text ${emotionKey}">
+                    ${emotionKey.charAt(0).toUpperCase() + emotionKey.slice(1)}
                 </span>
             </div>
         </td>
@@ -379,6 +380,25 @@ function setupModalControls() {
 
     if (addPatientBtn && modal) {
         addPatientBtn.addEventListener('click', () => {
+            // Reset form and title
+            const form = document.getElementById('newPatientForm');
+            const modalTitle = modal.querySelector('.modal-header h2');
+            if (form) {
+                form.reset();
+                form.dataset.mode = 'add';
+                delete form.dataset.originalMrn;
+                // Explicitly clear clinical notes
+                const clinicalNotes = form.querySelector('#clinicalNotes');
+                if (clinicalNotes) {
+                    clinicalNotes.value = '';
+                    clinicalNotes.textContent = '';
+                }
+            }
+            if (modalTitle) {
+                modalTitle.textContent = 'Add New Patient';
+            }
+            
+            // Show modal
             modal.style.display = 'flex';
             modal.offsetHeight; // Force reflow
             modal.classList.add('show');
@@ -392,7 +412,18 @@ function setupModalControls() {
         setTimeout(() => {
             modal.style.display = 'none';
             const form = document.getElementById('newPatientForm');
-            if (form) form.reset();
+            if (form) {
+                form.reset();
+                // Explicitly clear clinical notes
+                const clinicalNotes = form.querySelector('#clinicalNotes');
+                if (clinicalNotes) {
+                    clinicalNotes.value = '';
+                    clinicalNotes.textContent = '';
+                }
+                // Reset form mode
+                form.dataset.mode = 'add';
+                delete form.dataset.originalMrn;
+            }
         }, 300);
     };
 
