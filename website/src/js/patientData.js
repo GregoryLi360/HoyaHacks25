@@ -110,7 +110,7 @@ export async function addPatient(patientData) {
         const newPatient = {
             ...patientData,
             dateAdmitted: new Date().toISOString(),
-            emotionalState: emotionalStates.neutral
+            emotionalState: neutral
         };
         patients.unshift(newPatient); // Add to beginning of array
         return newPatient;
