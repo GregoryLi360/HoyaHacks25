@@ -1,4 +1,4 @@
-import { getPatients, emotionalStates, deletePatient, searchPatients } from './patientData.js';
+import { getPatients, emotionalStates, deletePatient, searchPatients, getPatientsFromDatabase } from './patientData.js';
 import { initializeModal } from './modal.js';
 import notificationManager from './notifications.js';
 import { initializeSidebar } from './components.js';
@@ -25,9 +25,9 @@ function formatDate(dateString) {
 }
 
 // Delete patient handler
-function deletePatientHandler(mrn) {
+async function deletePatientHandler(mrn) {
     if (confirm('Are you sure you want to delete this patient record? This action cannot be undone.')) {
-        deletePatient(mrn);
+        await deletePatient(mrn);
         refreshPatientsList();
         window.showNotification('delete');
     }
@@ -73,24 +73,30 @@ function editPatientHandler(patient) {
 
 // Create patient row HTML
 function createPatientRow(patient) {
-    const initial = (patient.firstName[0] || '').toUpperCase();
+    if (!patient) return null;
+    
+    // Safely get the first letter of first name, defaulting to '?'
+    const initial = patient.firstName ? patient.firstName[0].toUpperCase() : '?';
+    
     const row = document.createElement('tr');
     row.innerHTML = `
         <td>
             <div class="patient-info">
-                <div class="patient-avatar" style="background-color: ${patient.emotionalState.lightColor}">
+                <div class="patient-avatar" style="background-color: ${patient.emotionalState?.lightColor || '#F0F3FF'}">
                     ${initial}
                 </div>
-                <span>${patient.firstName} ${patient.lastName}</span>
+                <span>${patient.firstName || ''} ${patient.lastName || ''}</span>
             </div>
         </td>
-        <td>${formatDate(patient.dateAdmitted)}</td>
-        <td>${patient.mrn}</td>
-        <td>${patient.diagnosis}</td>
+        <td>${formatDate(patient.dateAdmitted || new Date())}</td>
+        <td>${patient.mrn || ''}</td>
+        <td>${patient.diagnosis || ''}</td>
         <td>
-            <div class="emotion-indicator ${patient.emotionalState.state}">
-                ${createEmotionSVG(patient.emotionalState)}
-                <span class="emotion-text ${patient.emotionalState.state}">${patient.emotionalState.state.charAt(0).toUpperCase() + patient.emotionalState.state.slice(1)}</span>
+            <div class="emotion-indicator ${patient.emotionalState?.state || 'neutral'}">
+                ${createEmotionSVG(patient.emotionalState || emotionalStates.neutral)}
+                <span class="emotion-text ${patient.emotionalState?.state || 'neutral'}">
+                    ${(patient.emotionalState?.state || 'Neutral').charAt(0).toUpperCase() + (patient.emotionalState?.state || 'neutral').slice(1)}
+                </span>
             </div>
         </td>
         <td class="actions">
@@ -219,24 +225,43 @@ export async function refreshPatientsList(page = 1, searchQuery = '') {
     try {
         console.log('Refreshing patients list...');
         
+        // Show loading state
+        const tbody = document.getElementById('patients-tbody');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px;">
+                        <div>Loading patients...</div>
+                    </td>
+                </tr>
+            `;
+        }
+
         // Get patients data
         console.log('Getting patients data...');
         const { patients, totalPages, currentPage } = searchQuery ? 
-            searchPatients(searchQuery, page) : 
+            await searchPatients(searchQuery, page) : 
             getPatients(page);
         
         console.log('Retrieved patients:', patients);
 
         // Add patient rows
-        const tbody = document.getElementById('patients-tbody');
         if (tbody) {
             tbody.innerHTML = '';
-            patients.forEach(patient => {
-                tbody.appendChild(createPatientRow(patient));
-            });
+            if (patients.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 20px;">
+                            <div>No patients found</div>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                patients.forEach(patient => {
+                    tbody.appendChild(createPatientRow(patient));
+                });
+            }
             console.log('Patient rows added to table');
-        } else {
-            console.error('Could not find patients-tbody element');
         }
 
         // Update pagination
@@ -258,17 +283,17 @@ export async function refreshPatientsList(page = 1, searchQuery = '') {
                 });
             }
         }
-
-        // Add sort button event listener
-        const sortBtn = document.querySelector('.sort-btn');
-        if (sortBtn) {
-            sortBtn.addEventListener('click', () => {
-                // TODO: Implement sorting functionality
-                console.log('Sort button clicked');
-            });
-        }
     } catch (error) {
         console.error('Error refreshing patients:', error);
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px;">
+                        <div>Error loading patients. Please try again.</div>
+                    </td>
+                </tr>
+            `;
+        }
     }
 }
 
@@ -332,6 +357,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error('Patients table body not found');
             }
             console.log('Found patients table structure');
+
+            // Load initial patients data
+            await getPatientsFromDatabase();
+            await refreshPatientsList();
+            console.log('Initial patients list loaded');
+
+            // Setup update button
+            const updateBtn = document.querySelector('.update-btn');
+            if (updateBtn) {
+                updateBtn.addEventListener('click', async () => {
+                    try {
+                        await getPatientsFromDatabase();
+                        await refreshPatientsList();
+                    } catch (error) {
+                        window.showNotification('Failed to update patient list', 'error');
+                    }
+                });
+            }
         }
         
         // Initialize modal
@@ -339,15 +382,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('Modal initialized');
         
         // Setup modal controls
-        setupModalControls();
-        console.log('Modal controls set up');
-        
-        // Only load patients list if we're on the patients page
-        if (window.location.pathname.includes('patients.html')) {
-            await refreshPatientsList();
-            console.log('Initial patients list loaded');
+        if (document.getElementById('addPatientModal')) {
+            setupModalControls();
+            console.log('Modal controls set up');
         }
-
+        
         // Initialize search with debounce
         const searchInput = document.getElementById('header-search');
         if (searchInput) {

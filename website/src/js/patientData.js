@@ -32,26 +32,8 @@ export const emotionalStates = {
     }
 };
 
-// In-memory storage for patients (in a real app, this would be a database)
-//TODO: Add database
-let patients = [
-    {
-        firstName: "John",
-        lastName: "Doe",
-        mrn: "MRN001",
-        diagnosis: "General Checkup",
-        dateAdmitted: new Date().toISOString(),
-        emotionalState: emotionalStates.anxious
-    },
-    {
-        firstName: "Jane",
-        lastName: "Smith",
-        mrn: "MRN002",
-        diagnosis: "Routine Follow-up",
-        dateAdmitted: new Date().toISOString(),
-        emotionalState: emotionalStates.happy
-    }
-];
+let patients = [];
+let isLoading = true;
 
 // Pagination settings
 const PATIENTS_PER_PAGE = 5;
@@ -68,15 +50,15 @@ function formatDate(date) {
     });
 }
 
-export function addPatient(patientData) {
-    const newPatient = {
-        ...patientData,
-        dateAdmitted: new Date().toISOString(),
-        emotionalState: emotionalStates.neutral
-    };
-    patients.unshift(newPatient); // Add to beginning of array
-    return newPatient;
-}
+// export function addPatient(patientData) {
+//     const newPatient = {
+//         ...patientData,
+//         dateAdmitted: new Date().toISOString(),
+//         emotionalState: emotionalStates.neutral
+//     };
+//     patients.unshift(newPatient); // Add to beginning of array
+//     return newPatient;
+// }
 
 export async function addPatient(patientData) {
     try {
@@ -98,17 +80,55 @@ export async function addPatient(patientData) {
         const newPatient = {
             ...patientData,
             dateAdmitted: new Date().toISOString(),
-            emotionalState: {
-                state: 'neutral',
-                color: '#7280ff',
-                lightColor: '#e6e9ff'
-            }
+            emotionalState: emotionalStates.neutral
         };
         patients.unshift(newPatient); // Add to beginning of array
         return newPatient;
     } catch (error) {
         console.error('Error adding patient:', error);
+        window.showNotification('Failed to add patient. Please try again.', 'error');
         return null;
+    }
+}
+
+export async function getPatientsFromDatabase() {
+    try {
+        isLoading = true;
+        const response = await fetch(`${ROOT_URL}/patients`, {
+            method: "GET",
+            headers: {
+                'Authorization': 'Bearer ' + AUTH_TOKEN,
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch patients');
+        }
+
+        const data = await response.json();
+        patients = data.map(patient => {
+            const latestLog = patient.logs[0] || {};
+            return {
+                firstName: latestLog.firstName || '',
+                lastName: latestLog.lastName || '',
+                mrn: patient.MRN,
+                diagnosis: latestLog.diagnosis || '',
+                dateAdmitted: latestLog.createdAt || new Date().toISOString(),
+                emotionalState: latestLog.emotionalState || emotionalStates.neutral,
+                startTime: latestLog.startTime || '',
+                interactionTime: latestLog.interactionTime || '',
+                notes: latestLog.notes || '',
+                medications: latestLog.medications || ''
+            };
+        });
+        
+        isLoading = false;
+        return patients;
+    } catch(error) {
+        console.error('Error getting database patients:', error);
+        window.showNotification('Failed to get database patients. Please try again.', 'error');
+        isLoading = false;
+        return [];
     }
 }
 
@@ -120,21 +140,27 @@ export function getPatients(page = 1) {
         totalPatients: patients.length,
         totalPages: Math.ceil(patients.length / PATIENTS_PER_PAGE),
         currentPage: page,
-        patientsPerPage: PATIENTS_PER_PAGE
+        patientsPerPage: PATIENTS_PER_PAGE,
+        isLoading
     };
 }
 
-export function deletePatient(mrn) {
+export async function deletePatient(mrn) {
     const index = patients.findIndex(p => p.mrn === mrn);
-    fetch(`${ROOT_URL}/${mrn}`, {
-        method: "DELETE",
-    })
-        .then(response => response.json())
-        .then(data => console.log(data))
-        .catch(error => console.error('Error:', error));
-    if (index !== -1) {
-        patients.splice(index, 1);
-        return true;
+    try {
+        await fetch(`${ROOT_URL}/patients/${mrn}`, {
+            method: "DELETE",
+            headers: {
+                'Authorization': 'Bearer ' + AUTH_TOKEN,
+            },
+        });
+        if (index !== -1) {
+            patients.splice(index, 1);
+            return true;
+        }
+    } catch(error) {
+        console.error('Error deleting patient:', error);
+        window.showNotification('Failed to delete patient. Please try again.', 'error');
     }
     return false;
 }
@@ -165,6 +191,7 @@ export async function updatePatient(originalMrn, updatedData) {
                 'diagnosis': updatedData.diagnosis,
                 'notes': updatedData.notes || '',
                 'medications': updatedData.medications || '',
+                'emotionalState': updatedData.emotionalState
             })
         });
         patients[index] = {
@@ -177,7 +204,7 @@ export async function updatePatient(originalMrn, updatedData) {
     return false;
 }
 
-export function searchPatients(query, page = 1) {
+export async function searchPatients(query, page = 1) {
     query = query.toLowerCase().trim();
     
     // If no query, return all patients

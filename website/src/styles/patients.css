@@ -82,6 +82,7 @@
     overflow: hidden;
     border: 1px solid var(--border-color);
     margin-top: 16px;
+    animation: fadeIn 0.3s ease-out;
 }
 
 /* Table Styles */
@@ -196,6 +197,7 @@ th {
 }
 
 .jump-to-page-input[type=number] {
+    appearance: textfield;
     -moz-appearance: textfield;
 }
 
@@ -451,4 +453,69 @@ th {
 
 .sort-btn:active {
     transform: scale(0.98);
-} 
+}
+
+/* Animation and Loading States */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+tr {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.error-state {
+    text-align: center;
+    padding: 40px;
+    color: #d93025;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Loading Spinner */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    margin-bottom: 12px;
+    animation: spin 1s linear infinite;
+}
+
+/* Stagger child animations */
+tbody tr {
+    opacity: 0;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+tbody tr:nth-child(1) { animation-delay: 0.1s; }
+tbody tr:nth-child(2) { animation-delay: 0.2s; }
+tbody tr:nth-child(3) { animation-delay: 0.3s; }
+tbody tr:nth-child(4) { animation-delay: 0.4s; }
+tbody tr:nth-child(5) { animation-delay: 0.5s; } 

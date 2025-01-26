@@ -7,11 +7,27 @@ class NotificationManager {
     }
 
     show(message, type = 'add') {
+        // Get appropriate message and icon based on type
+        const config = {
+            add: { icon: 'check_circle', class: 'success', iconClass: 'success-icon' },
+            delete: { icon: 'check_circle', class: 'success', iconClass: 'success-icon' },
+            error: { icon: 'error', class: 'error', iconClass: 'notification-icon' }
+        };
+
+        // Use default message if none provided
+        if (!message) {
+            message = type === 'error' ? 
+                'An error occurred. Please try again.' :
+                type === 'delete' ? 
+                    'Patient deleted successfully' : 
+                    'Patient data saved successfully';
+        }
+
         // Create notification element
         const notification = document.createElement('div');
-        notification.className = 'notification-banner';
+        notification.className = `notification-banner ${config[type]?.class || 'success'}`;
         notification.innerHTML = `
-            <i class="material-icons success-icon">check_circle</i>
+            <i class="material-icons ${config[type]?.iconClass || 'success-icon'}">${config[type]?.icon || 'check_circle'}</i>
             <span class="message">${message}</span>
             <button class="close-notification">
                 <i class="material-icons">close</i>

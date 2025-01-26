@@ -6,24 +6,31 @@ export async function initializeModal() {
     try {
         console.log('Initializing modal...');
         
+        // Check if modal container exists
+        const modalContent = document.querySelector('#addPatientModal .modal-content');
+        if (!modalContent) {
+            console.log('Modal container not found - skipping initialization');
+            return; // Exit silently if modal container doesn't exist
+        }
+        
         // Load modal content
         const response = await fetch('./src/components/add-patient.html');
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            console.error('Failed to load modal content');
+            window.showNotification('error');
+            return;
         }
         const html = await response.text();
         
         // Insert modal content
-        const modalContent = document.querySelector('#addPatientModal .modal-content');
-        if (!modalContent) {
-            throw new Error('Modal content container not found');
-        }
         modalContent.innerHTML = html;
         
         // Initialize form
         const form = document.getElementById('newPatientForm');
         if (!form) {
-            throw new Error('Form not found in modal');
+            console.error('Form not found in modal');
+            window.showNotification('error');
+            return;
         }
         console.log('Form found and ready for initialization');
 
@@ -37,7 +44,9 @@ export async function initializeModal() {
                 firstName: form.querySelector('#firstName').value.trim(),
                 lastName: form.querySelector('#lastName').value.trim(),
                 mrn: form.querySelector('#mrn').value.trim(),
-                diagnosis: form.querySelector('#diagnosis').value.trim()
+                diagnosis: form.querySelector('#diagnosis').value.trim(),
+                notes: form.querySelector('#clinicalNotes').value.trim(),
+                medications: form.querySelector('#medications').value.trim()
             };
 
             // Validate required fields

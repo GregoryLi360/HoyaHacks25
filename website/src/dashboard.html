@@ -32,8 +32,8 @@
                         </div>
                         <div class="metric-content">
                             <h3>AI Interactions</h3>
-                            <p class="metric-value">2,547</p>
-                            <p class="metric-change positive">+15% from last week</p>
+                            <p class="metric-value">--</p>
+                            <p class="metric-change">Total interactions</p>
                         </div>
                     </div>
                     <div class="metric-card">
@@ -41,9 +41,9 @@
                             <i class="material-icons">sentiment_satisfied_alt</i>
                         </div>
                         <div class="metric-content">
-                            <h3>Patient Satisfaction</h3>
-                            <p class="metric-value">94%</p>
-                            <p class="metric-change positive">+5% from last month</p>
+                            <h3>Common Emotion</h3>
+                            <p class="metric-value">--</p>
+                            <p class="metric-change">Most frequent state</p>
                         </div>
                     </div>
                     <div class="metric-card">
@@ -51,9 +51,9 @@
                             <i class="material-icons">timer</i>
                         </div>
                         <div class="metric-content">
-                            <h3>Response Time</h3>
-                            <p class="metric-value">1.2s</p>
-                            <p class="metric-change negative">+0.1s from average</p>
+                            <h3>Avg. Duration</h3>
+                            <p class="metric-value">--</p>
+                            <p class="metric-change">Per interaction</p>
                         </div>
                     </div>
                     <div class="metric-card">
@@ -61,18 +61,42 @@
                             <i class="material-icons">people</i>
                         </div>
                         <div class="metric-content">
-                            <h3>Active Patients</h3>
-                            <p class="metric-value">156</p>
-                            <p class="metric-change positive">+12 this week</p>
+                            <h3>Active Users</h3>
+                            <p class="metric-value">--</p>
+                            <p class="metric-change">Unique patients</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Recent Patient Interactions -->
                 <div class="recent-interactions">
-                    <h2>Recent Patient Interactions</h2>
-                    <div class="interactions-list">
-                        <!-- Interaction items will be dynamically added here -->
+                    <div class="section-header">
+                        <h2>Recent Patient Interactions</h2>
+                        <div class="header-actions">
+                            <button class="update-btn">
+                                <i class="material-icons">sync</i>
+                                <span>Update</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="interactions-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Interaction Time</th>
+                                    <th>Duration</th>
+                                    <th>Emotional State</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="interactions-tbody">
+                                <!-- Interaction rows will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                        <div id="interactions-pagination">
+                            <!-- Pagination will be dynamically inserted here -->
+                        </div>
                     </div>
                 </div>
             </div>
