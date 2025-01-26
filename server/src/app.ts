@@ -130,7 +130,8 @@ router.post('/patients', async (req, res) => {
         let patientData: PatientData = {} as PatientData;
         
         for (const patient of existingPatients) {
-            patientData = { ...patientData, ...patient.toObject() };
+            const { _id, __v, ...patientWithoutId } = patient.toObject();
+            patientData = { ...patientData, ...patientWithoutId };
         }
         
         patientData = { ...patientData, ...patientNewData };
