@@ -10,14 +10,24 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.HoyaHacks"
+      "bundleIdentifier": "com.anonymous.HoyaHacks",
+      "splash": {
+        "image": "./assets/images/baymax_face.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#FFFFFF"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/baymax_face.png",
+        "backgroundColor": "#FFFFFF"
       },
-      "package": "com.anonymous.HoyaHacks"
+      "package": "com.anonymous.HoyaHacks",
+      "splash": {
+        "image": "./assets/images/baymax_face.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#FFFFFF"
+      }
     },
     "web": {
       "bundler": "metro",
