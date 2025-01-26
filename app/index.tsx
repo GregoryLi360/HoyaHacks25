@@ -199,8 +199,23 @@ export default function ChatScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const gradientProgress = useRef(new Animated.Value(0)).current;
   const previousGradient = useRef(defaultUIState.gradientColors);
+  const pageOpacity = useRef(new Animated.Value(0)).current;
 
-  const animateTextChange = (newMessage: string) => {
+  useEffect(() => {
+    Animated.timing(pageOpacity, {
+      toValue: 1,
+      duration: 1200,
+      useNativeDriver: true,
+      easing: Easing.bezier(0.22, 1, 0.36, 1), // Custom easing curve for more gradual fade
+    }).start();
+  }, []);
+
+  const animateTextChange = (newMessage: string, skipAnimation: boolean = false) => {
+    if (skipAnimation) {
+      setLatestMessage(newMessage);
+      return;
+    }
+
     Animated.parallel([
       Animated.timing(messageOpacity, {
         toValue: 0,
@@ -687,7 +702,7 @@ Notes: ${newData.notes}`
   };
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { opacity: pageOpacity }]}>
       <LinearGradient
         colors={uiState.gradientColors}
         style={StyleSheet.absoluteFill}
@@ -721,7 +736,10 @@ Notes: ${newData.notes}`
             <View style={styles.header}>
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={() => setIsConnected(!isConnected)}
+                onPress={() => {
+                  setIsConnected(!isConnected);
+                  animateTextChange(isConnected ? "Press the radio to start" : "Listening...", true);
+                }}
               >
                 <Animated.View style={{ opacity: uiOpacity }}>
                   <Ionicons
@@ -829,7 +847,7 @@ Notes: ${newData.notes}`
           />
         </Animated.View>
       )}
-    </View>
+    </Animated.View>
   );
 }
 
