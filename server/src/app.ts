@@ -126,6 +126,8 @@ router.post('/patients', async (req, res) => {
         const exisitingPatient: PatientData | {} = await Data.findOne({ MRN: medicalRecordNumber }) || {};
         const patientData: PatientData = { ...exisitingPatient, ...patientNewData };
 
+        console.log(patientData);
+
         const data = new Data(patientData);
         await data.save();
         res.status(200).send(":)");
