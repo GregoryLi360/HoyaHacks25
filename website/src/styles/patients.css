@@ -299,23 +299,51 @@ th {
 
 /* Emotion-specific colors */
 .emotion-indicator.neutral {
-    background-color: rgba(114, 128, 255, 0.1);  /* Primary color with opacity */
+    background-color: rgba(114, 128, 255, 0.1);
 }
 
 .emotion-indicator.anxious {
-    background-color: #F0FFF0;  /* Very light pastel green */
-}
-
-.emotion-indicator.happy {
-    background-color: rgba(255, 179, 71, 0.1);
+    background-color: rgba(255, 224, 178, 0.2);
 }
 
 .emotion-indicator.depressed {
-    background-color: rgba(100, 149, 237, 0.1);
+    background-color: rgba(144, 202, 249, 0.2);
 }
 
-.emotion-indicator.angry {
-    background-color: rgba(255, 105, 97, 0.1);
+.emotion-indicator.positive {
+    background-color: rgba(165, 214, 167, 0.2);
+}
+
+.emotion-indicator.calm {
+    background-color: rgba(206, 147, 216, 0.2);
+}
+
+.emotion-indicator.frustrated {
+    background-color: rgba(239, 154, 154, 0.2);
+}
+
+.emotion-indicator.hopeful {
+    background-color: rgba(255, 204, 128, 0.2);
+}
+
+.emotion-indicator.confident {
+    background-color: rgba(128, 222, 234, 0.2);
+}
+
+.emotion-indicator.tired {
+    background-color: rgba(188, 170, 164, 0.2);
+}
+
+.emotion-indicator.excited {
+    background-color: rgba(230, 238, 156, 0.2);
+}
+
+.emotion-indicator.worried {
+    background-color: rgba(159, 168, 218, 0.2);
+}
+
+.emotion-indicator.grateful {
+    background-color: rgba(165, 214, 167, 0.2);
 }
 
 .emotion-text {
@@ -323,45 +351,58 @@ th {
     font-weight: 500;
 }
 
+/* Text colors match the main color from emotionalStates */
 .emotion-text.neutral {
-    color: var(--primary-color);  /* Primary color */
+    color: #7280ff;
 }
 
 .emotion-text.anxious {
-    color: #90EE90;  /* Light pastel green */
-}
-
-.emotion-text.happy {
-    color: #FFB347;
+    color: #FFE0B2;
 }
 
 .emotion-text.depressed {
-    color: #6495ED;
+    color: #90CAF9;
 }
 
-.emotion-text.angry {
-    color: #FF6961;
+.emotion-text.positive {
+    color: #A5D6A7;
+}
+
+.emotion-text.calm {
+    color: #CE93D8;
+}
+
+.emotion-text.frustrated {
+    color: #EF9A9A;
+}
+
+.emotion-text.hopeful {
+    color: #FFCC80;
+}
+
+.emotion-text.confident {
+    color: #80DEEA;
+}
+
+.emotion-text.tired {
+    color: #BCAAA4;
+}
+
+.emotion-text.excited {
+    color: #E6EE9C;
+}
+
+.emotion-text.worried {
+    color: #9FA8DA;
+}
+
+.emotion-text.grateful {
+    color: #A5D6A7;
 }
 
 /* Hover effects */
-.emotion-indicator.neutral:hover {
-    background-color: rgba(114, 128, 255, 0.15);  /* Primary color with slightly higher opacity */
-}
-
-.emotion-indicator.anxious:hover {
-    background-color: #E0FFE0;  /* Slightly darker pastel green */
-}
-
-.emotion-indicator.happy:hover {
-    background-color: rgba(255, 179, 71, 0.15);
-}
-
-.emotion-indicator.depressed:hover {
-    background-color: rgba(100, 149, 237, 0.15);
-}
-
-.emotion-indicator.angry:hover {
-    background-color: rgba(255, 105, 97, 0.15);
+.emotion-indicator:hover {
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Animation for emotion changes */

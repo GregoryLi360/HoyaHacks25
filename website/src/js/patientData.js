@@ -28,7 +28,7 @@ export const emotionalStates = {
     frustrated: {
         color: '#EF9A9A',
         lightColor: '#FFEBEE',
-        path: 'M 8 15 C 8 18, 12 19, 16 18'  // Stronger frown
+        path: 'M 8 16 C 10 13, 14 13, 16 16'  // Proper downturned curve for frustrated emotion
     },
     hopeful: {
         color: '#FFCC80',
