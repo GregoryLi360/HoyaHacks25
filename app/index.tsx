@@ -4,15 +4,19 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
   SafeAreaView,
   LayoutAnimation,
   ActivityIndicator,
   Image,
+  Animated,
+  Easing,
 } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { HumeClient, type Hume } from "hume";
 import NativeAudio, { AudioEventPayload } from "../modules/audio/src/AudioModule";
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import { BreathingExercise } from '../components/BreathingExercise/BreathingExercise';
 
 interface ChatEntry {
   role: "user" | "assistant";
@@ -20,35 +24,245 @@ interface ChatEntry {
   content: string;
 }
 
+interface UIState {
+  gradientColors: string[];
+  transitionDuration: number;
+}
+
+interface PatientData {
+  MRN: string;
+  firstName: string;
+  lastName: string;
+  diagnosis: string;
+  notes: string;
+  medications: string;
+  createdAt: Date;
+}
+
+const defaultUIState: UIState = {
+  gradientColors: ['#F5F9FF', '#E3F2FD', '#BBDEFB'],
+  transitionDuration: 300,
+};
+
+const emotionalUISettings = {
+  anxious: {
+    transitionDuration: 1000,
+    gradientColors: ['#E3F2FD', '#BBDEFB', '#90CAF9'],
+  },
+  depressed: {
+    transitionDuration: 1500,
+    gradientColors: ['#FFF8F0', '#FFF3E0', '#FFE0B2'],
+  },
+  neutral: {
+    transitionDuration: 300,
+    gradientColors: ['#F5F9FF', '#E3F2FD', '#BBDEFB'],
+  },
+  positive: {
+    transitionDuration: 500,
+    gradientColors: ['#E8F5E9', '#C8E6C9', '#A5D6A7'],
+  },
+  calm: {
+    transitionDuration: 800,
+    gradientColors: ['#F3E5F5', '#E1BEE7', '#CE93D8'],
+  },
+  frustrated: {
+    transitionDuration: 400,
+    gradientColors: ['#FFEBEE', '#FFCDD2', '#EF9A9A'],
+  },
+  hopeful: {
+    transitionDuration: 600,
+    gradientColors: ['#FFF3E0', '#FFE0B2', '#FFCC80'],
+  },
+  confident: {
+    transitionDuration: 400,
+    gradientColors: ['#E0F7FA', '#B2EBF2', '#80DEEA'],
+  },
+  tired: {
+    transitionDuration: 1200,
+    gradientColors: ['#EFEBE9', '#D7CCC8', '#BCAAA4'],
+  },
+  excited: {
+    transitionDuration: 300,
+    gradientColors: ['#F9FBE7', '#F0F4C3', '#E6EE9C'],
+  },
+  worried: {
+    transitionDuration: 700,
+    gradientColors: ['#E8EAF6', '#C5CAE9', '#9FA8DA'],
+  },
+  grateful: {
+    transitionDuration: 500,
+    gradientColors: ['#E8F5E9', '#C8E6C9', '#A5D6A7'],
+  }
+};
+
+const mockPatientData: PatientData = {
+  MRN: "MRN123456",
+  firstName: "Sarah",
+  lastName: "Johnson",
+  diagnosis: "Generalized Anxiety Disorder (GAD), Mild Depression",
+  notes: "Patient reports increased anxiety in social situations. Shows good response to CBT. Regular exercise recommended. Sleep patterns have improved with current medication regimen.",
+  medications: "Sertraline 50mg daily, Propranolol 10mg as needed for acute anxiety",
+  createdAt: new Date("2024-12-15")
+};
+
 const humeClientWithApiKey = () => {
   return new HumeClient({
     apiKey: process.env.EXPO_PUBLIC_HUME_API_KEY || "",
   });
 }
 
+const VoiceLevelBars = ({ isConnected, isMuted }: { isConnected: boolean; isMuted: boolean }) => {
+  const barAnimations = [...Array(5)].map(() => useRef(new Animated.Value(0.2)).current);
+  
+  useEffect(() => {
+    const animateBars = () => {
+      const animations = barAnimations.map((anim) => {
+        const randomHeight = Math.random() * 0.8 + 0.2; 
+        return Animated.sequence([
+          Animated.timing(anim, {
+            toValue: randomHeight,
+            duration: 200,
+            useNativeDriver: true,
+            easing: Easing.linear,
+          }),
+          Animated.timing(anim, {
+            toValue: 0.2,
+            duration: 200,
+            useNativeDriver: true,
+            easing: Easing.linear,
+          }),
+        ]);
+      });
+
+      Animated.stagger(100, animations).start(() => {
+        if (isConnected && !isMuted) {
+          animateBars();
+        }
+      });
+    };
+
+    if (isConnected && !isMuted) {
+      animateBars();
+    }
+
+    return () => {
+      barAnimations.forEach((anim) => anim.stopAnimation());
+    };
+  }, [isConnected, isMuted]);
+
+  return (
+    <View style={styles.voiceBarsContainer}>
+      {barAnimations.map((anim, index) => (
+        <Animated.View
+          key={index}
+          style={[
+            styles.voiceBar,
+            {
+              transform: [
+                {
+                  scaleY: anim,
+                },
+              ],
+            },
+          ]}
+        />
+      ))}
+    </View>
+  );
+};
+
 export default function ChatScreen() {
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [chatEntries, setChatEntries] = useState<ChatEntry[]>([]);
+  const [latestMessage, setLatestMessage] = useState<string>("Hello! I'm Baymax, your friendly health companion. How can I help you today?");
+  const [uiState, setUIState] = useState<UIState>(defaultUIState);
+  const [nextGradient, setNextGradient] = useState<string[]>(defaultUIState.gradientColors);
+  const [currentEmotion, setCurrentEmotion] = useState<keyof typeof emotionalUISettings>("neutral");
+  const [showBreathingExercise, setShowBreathingExercise] = useState(false);
+  const [breathingSequence, setBreathingSequence] = useState<Array<{pattern: 'inhale' | 'exhale' | 'hold', duration: number}>>([]);
+  const [currentBreathIndex, setCurrentBreathIndex] = useState(0);
+  const [breathingPattern, setBreathingPattern] = useState<'inhale' | 'exhale' | 'hold'>('inhale');
+  const [breathingDuration, setBreathingDuration] = useState(4);
+  const [isBreathingSession, setIsBreathingSession] = useState(false);
+  const [topEmotions, setTopEmotions] = useState<Array<{emotion: string, score: number}>>([]);
+  const [patientData, setPatientData] = useState<PatientData | null>(mockPatientData);
+  const previousMuteState = useRef(false);
   const humeRef = useRef<HumeClient | null>(null);
-  const scrollViewRef = useRef<ScrollView | null>(null);
   const chatSocketRef = useRef<Hume.empathicVoice.chat.ChatSocket | null>(null);
+  const uiOpacity = useRef(new Animated.Value(1)).current;
+  const messageOpacity = useRef(new Animated.Value(1)).current;
+  const textPositionAnimation = useRef(new Animated.Value(0)).current;
+  const breathingOpacity = useRef(new Animated.Value(0)).current;
+  const emotionOpacity = useRef(new Animated.Value(1)).current;
+  const emotionScale = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const gradientProgress = useRef(new Animated.Value(0)).current;
+  const previousGradient = useRef(defaultUIState.gradientColors);
+
+  const animateTextChange = (newMessage: string) => {
+    Animated.parallel([
+      Animated.timing(messageOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(textPositionAnimation, {
+        toValue: -20,
+        duration: 200,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      setLatestMessage(newMessage);
+      textPositionAnimation.setValue(20);
+      
+      Animated.parallel([
+        Animated.timing(messageOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(textPositionAnimation, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        })
+      ]).start();
+    });
+  };
 
   const addChatEntry = (entry: ChatEntry) => {
-    setChatEntries((prev) => [...prev, entry]);
+    if (entry.role === "assistant") {
+      animateTextChange(entry.content);
+    }
   };
 
   const startClient = async () => {
     humeRef.current = humeClientWithApiKey();
   }
 
-  useEffect(() => {
-    if (scrollViewRef.current) {
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      scrollViewRef.current.scrollToEnd();
-    }
-  }, [chatEntries]);
+  const getSystemPrompt = (patient: PatientData | null) => {
+    if (!patient) return '';
+    
+    return `You are Baymax, a friendly and empathetic healthcare companion. You have access to the following patient information that you can reference to provide more personalized care:
+
+Patient Details:
+- MRN: {{mrn}}
+- Name: {{firstName}} {{lastName}}
+- Diagnosis: {{diagnosis}}
+- Current Medications: {{medications}}
+- Clinical Notes: {{notes}}
+
+Guidelines:
+1. Keep responses warm and friendly, focusing on emotional support
+2. Use patient context to inform your responses but don't explicitly mention it
+3. If patient shows signs of distress, suggest appropriate coping mechanisms
+4. Monitor emotional state through prosody scores
+5. Offer the breathing exercise tool when anxiety is detected
+6. Always maintain a caring, non-judgmental tone
+
+Remember: This information is confidential. Only reference it indirectly to provide better support.`;
+  };
 
   const handleConnect = async () => {
     setIsLoading(true);
@@ -58,27 +272,40 @@ export default function ChatScreen() {
       await NativeAudio.getPermissions();
 
       const chatSocket = hume.empathicVoice.chat.connect({
-        configId: process.env.EXPO_PUBLIC_HUME_CONFIG_ID,
+        configId: process.env.EXPO_PUBLIC_HUME_CONFIG_ID
       });
 
       chatSocket.on("open", () => {
         NativeAudio.startRecording().catch(error => {
           console.error("Failed to start recording:", error);
         });
-        if (NativeAudio.isLinear16PCM) {
-          chatSocket.sendSessionSettings({
-            audio: {
-              encoding: "linear16",
-              channels: 1,
-              sampleRate: NativeAudio.sampleRate,
-            },
-          });
-        }
+        
+        const sessionSettings = {
+          type: "session_settings",
+          audio: NativeAudio.isLinear16PCM ? {
+            encoding: "linear16",
+            channels: 1,
+            sampleRate: NativeAudio.sampleRate,
+          } : undefined,
+          system_prompt: getSystemPrompt(patientData),
+          context: patientData ? {
+            text: `Patient Information:
+MRN: ${patientData.MRN}
+Name: ${patientData.firstName} ${patientData.lastName}
+Diagnosis: ${patientData.diagnosis}
+Medications: ${patientData.medications}
+Notes: ${patientData.notes}`
+          } : undefined
+        };
+        
+        console.log("Sending session settings:", sessionSettings);
+        chatSocket.sendSessionSettings(sessionSettings);
+        
         setIsConnected(true);
         addChatEntry({
           role: "assistant",
           timestamp: new Date().toString(),
-          content: "Hello! I'm your medical assistant. How can I help you today?",
+          content: "Hello! I'm Baymax, your friendly health companion. How can I help you today?",
         });
       });
 
@@ -123,24 +350,26 @@ export default function ChatScreen() {
   };
 
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected && !isBreathingSession) {
       handleConnect().catch((error) => {
         console.error("Error while connecting:", error);
       });
-    } else {
+    } else if (!isConnected && !isBreathingSession) {
       handleDisconnect().catch((error) => {
         console.error("Error while disconnecting:", error);
       });
     }
     return () => {
-      NativeAudio.stopRecording().catch((error: any) => {
-        console.error("Error while stopping recording", error);
-      });
+      if (!isBreathingSession) {
+        NativeAudio.stopRecording().catch((error: any) => {
+          console.error("Error while stopping recording", error);
+        });
+      }
       if (chatSocketRef.current?.readyState === WebSocket.OPEN) {
         chatSocketRef.current?.close();
       }
     };
-  }, [isConnected]);
+  }, [isConnected, isBreathingSession]);
 
   useEffect(() => {
     if (isMuted) {
@@ -158,10 +387,229 @@ export default function ChatScreen() {
     NativeAudio.stopPlayback();
   };
 
+  const getObjectStructure = (obj: any): any => {
+    if (obj === null) return 'null';
+    if (Array.isArray(obj)) {
+      return obj.length ? '[Array]' : '[]';
+    }
+    if (typeof obj === 'object') {
+      const structure: Record<string, any> = {};
+      for (const key in obj) {
+        structure[key] = getObjectStructure(obj[key]);
+      }
+      return structure;
+    }
+    return typeof obj;
+  };
+
+  const handleUIToolCall = async (
+    toolCallMessage: Hume.empathicVoice.ToolCallMessage
+  ) => {
+    try {
+      const { emotional_state, intensity } = JSON.parse(toolCallMessage.parameters);
+      
+      const baseSettings = emotionalUISettings[emotional_state] || emotionalUISettings.neutral;
+      
+      updateUIForEmotion(emotional_state);
+      
+      return {
+        type: "tool_response",
+        toolCallId: toolCallMessage.toolCallId,
+        content: JSON.stringify({ success: true, applied: baseSettings }),
+      };
+    } catch (error) {
+      console.error("Error in UI tool:", error);
+      return {
+        type: "tool_error",
+        toolCallId: toolCallMessage.toolCallId,
+        error: "Failed to update UI state",
+        content: "There was an error updating the interface",
+      };
+    }
+  };
+
+  const handleBreathingToolCall = async (
+    toolCallMessage: Hume.empathicVoice.ToolCallMessage
+  ) => {
+    try {
+      console.log("Raw tool call message:", toolCallMessage);
+      
+      if (!toolCallMessage.parameters) {
+        throw new Error("No parameters provided in tool call");
+      }
+
+      const params = JSON.parse(toolCallMessage.parameters);
+      console.log("Parsed parameters:", params);
+
+      if (!params.sequence || !Array.isArray(params.sequence) || params.sequence.length === 0) {
+        throw new Error("Invalid or empty sequence in parameters");
+      }
+
+      const sequence = params.sequence.map(step => {
+        if (!step.pattern || !step.duration) {
+          throw new Error(`Invalid step in sequence: ${JSON.stringify(step)}`);
+        }
+        return {
+          pattern: step.pattern as 'inhale' | 'exhale' | 'hold',
+          duration: Number(step.duration)
+        };
+      });
+      
+      previousMuteState.current = isMuted;
+      setIsMuted(true);
+      
+      setIsBreathingSession(true);
+      
+      setBreathingSequence(sequence);
+      setCurrentBreathIndex(0);
+      
+      setBreathingDuration(sequence[0].duration);
+      setBreathingPattern(sequence[0].pattern);
+      setShowBreathingExercise(true);
+
+      Animated.timing(breathingOpacity, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.inOut(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+
+      console.log("Starting sequence:", sequence);
+
+      await NativeAudio.stopRecording();
+
+      if (chatSocketRef.current?.readyState === WebSocket.OPEN) {
+        const toolResponseMessage = {
+          type: "tool_response",
+          toolCallId: toolCallMessage.toolCallId,
+          content: "Breathing exercise started",
+        };
+        
+        chatSocketRef.current?.sendToolResponseMessage(toolResponseMessage);
+      } else {
+        console.log("Socket not open, skipping response message");
+      }
+    } catch (error) {
+      console.error("Error handling breathing tool call:", error);
+      console.error("Tool call message was:", toolCallMessage);
+      
+      if (chatSocketRef.current?.readyState === WebSocket.OPEN) {
+        const toolErrorMessage = {
+          type: "tool_error",
+          toolCallId: toolCallMessage.toolCallId,
+          error: `Failed to start breathing exercise: ${error.message}`,
+          fallback_content: "I couldn't start the breathing exercise. The sequence format was invalid. Would you like to try again with a simple breathing exercise?",
+          level: "warn"
+        };
+        chatSocketRef.current?.sendToolErrorMessage(toolErrorMessage);
+      } else {
+        console.log("Socket not open, skipping error message");
+        setLatestMessage("I couldn't start the breathing exercise. Please try reconnecting.");
+      }
+    }
+  };
+
+  const handleBreathStepComplete = () => {
+    const nextIndex = currentBreathIndex + 1;
+    
+    if (nextIndex < breathingSequence.length) {
+      setCurrentBreathIndex(nextIndex);
+      setBreathingDuration(breathingSequence[nextIndex].duration);
+      setBreathingPattern(breathingSequence[nextIndex].pattern);
+    } else {
+      handleBreathingComplete();
+    }
+  };
+
+  const handleBreathingComplete = async () => {
+    Animated.timing(breathingOpacity, {
+      toValue: 0,
+      duration: 500,
+      easing: Easing.inOut(Easing.cubic),
+      useNativeDriver: true,
+    }).start(async () => {
+      setShowBreathingExercise(false);
+      setIsBreathingSession(false);
+      setBreathingSequence([]);
+      setCurrentBreathIndex(0);
+      
+      setIsMuted(previousMuteState.current);
+      
+      if (isConnected) {
+        try {
+          if (!chatSocketRef.current || chatSocketRef.current.readyState !== WebSocket.OPEN) {
+            await handleConnect();
+          }
+          await NativeAudio.startRecording();
+        } catch (error) {
+          console.error("Error resuming recording:", error);
+        }
+      }
+    });
+  };
+
+  const updateEmotions = (newEmotions: Array<{emotion: string, score: number}>) => {
+    Animated.parallel([
+      Animated.timing(emotionOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(emotionScale, {
+        toValue: 0.95,
+        duration: 200,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      setTopEmotions(newEmotions);
+      
+      Animated.parallel([
+        Animated.timing(emotionOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(emotionScale, {
+          toValue: 1,
+          duration: 300,
+          easing: Easing.elastic(1),
+          useNativeDriver: true,
+        })
+      ]).start();
+    });
+  };
+
   const handleIncomingMessage = async (
     message: Hume.empathicVoice.SubscribeEvent
   ) => {
+    if (isBreathingSession && 
+        !(message.type === "tool_call" && message.name === "breathing_exercise")) {
+      return;
+    }
+
+    console.log(`Message type: ${message.type}\nStructure:`, JSON.stringify(getObjectStructure(message), null, 2));
     switch (message.type) {
+      case "tool_call":
+        if (message.name === "update_ui_state") {
+          const response = await handleUIToolCall(message);
+          chatSocketRef.current?.sendToolResponseMessage(response);
+        } else if (message.name === "breathing_exercise") {
+          await handleBreathingToolCall(message);
+        }
+        break;
+      case "user_message":
+        if (message.models?.prosody?.scores) {
+          const scores = message.models.prosody.scores;
+          const emotionScores = Object.entries(scores)
+            .map(([emotion, score]) => ({ 
+              emotion: emotion.replace(/([A-Z])/g, ' $1').toLowerCase(),
+              score: score as number 
+            }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3);
+          updateEmotions(emotionScores);
+        }
+        break;
       case "error":
         console.error(message);
         break;
@@ -171,19 +619,9 @@ export default function ChatScreen() {
       case "audio_output":
         await NativeAudio.enqueueAudio(message.data);
         break;
-      case "user_message":
       case "assistant_message":
-        if (
-          message.message.role !== "user" &&
-          message.message.role !== "assistant"
-        ) {
-          return;
-        }
-        if (message.type === "user_message") {
-          handleInterruption();
-        }
         addChatEntry({
-          role: message.message.role,
+          role: "assistant",
           timestamp: new Date().toString(),
           content: message.message.content!,
         });
@@ -192,7 +630,6 @@ export default function ChatScreen() {
         handleInterruption();
         break;
       case "assistant_end":
-      case "tool_call":
       case "tool_error":
       case "tool_response":
         console.log(`Received unhandled message type: ${message.type}`);
@@ -204,212 +641,325 @@ export default function ChatScreen() {
     }
   };
 
+  const updatePatientData = async (newData: PatientData) => {
+    setPatientData(newData);
+    
+    if (isConnected && chatSocketRef.current?.readyState === WebSocket.OPEN) {
+      const sessionSettings = {
+        type: "session_settings",
+        system_prompt: getSystemPrompt(newData),
+        context: {
+          text: `Patient Information:
+MRN: ${newData.MRN}
+Name: ${newData.firstName} ${newData.lastName}
+Diagnosis: ${newData.diagnosis}
+Medications: ${newData.medications}
+Notes: ${newData.notes}`
+        }
+      };
+      
+      console.log("Updating session settings:", sessionSettings);
+      chatSocketRef.current.sendSessionSettings(sessionSettings);
+    }
+  };
+
+  const updateUIForEmotion = (emotion: keyof typeof emotionalUISettings) => {
+    const settings = emotionalUISettings[emotion];
+    console.log('Updating emotion to:', emotion);
+    
+    setNextGradient(settings.gradientColors);
+    
+    fadeAnim.setValue(0);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: settings.transitionDuration,
+      useNativeDriver: true,
+      easing: Easing.inOut(Easing.ease),
+    }).start(() => {
+      setUIState({
+        gradientColors: settings.gradientColors,
+        transitionDuration: settings.transitionDuration,
+      });
+      fadeAnim.setValue(0);
+    });
+    
+    setCurrentEmotion(emotion);
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Image 
-          source={require('../assets/images/icon.png')} 
-          style={styles.logo}
-        />
-        <Text style={styles.headerTitle}>Medical Assistant</Text>
-        <View style={styles.connectionStatus}>
-          <View style={[styles.statusDot, isConnected ? styles.connected : styles.disconnected]} />
-          <Text style={styles.statusText}>
-            {isConnected ? "Connected" : "Disconnected"}
-          </Text>
-        </View>
-      </View>
-
-      <ScrollView 
-        style={styles.chatDisplay} 
-        ref={scrollViewRef}
-        contentContainerStyle={styles.chatContent}
+    <View style={styles.container}>
+      <LinearGradient
+        colors={uiState.gradientColors}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      />
+      
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            opacity: fadeAnim,
+          },
+        ]}
       >
-        {chatEntries.map((entry, index) => (
-          <View
-            key={index}
-            style={[
-              styles.chatEntry,
-              entry.role === "user"
-                ? styles.userChatEntry
-                : styles.assistantChatEntry,
-            ]}
+        <LinearGradient
+          colors={nextGradient}
+          style={StyleSheet.absoluteFill}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+        />
+      </Animated.View>
+
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.contentContainer}>
+          <BlurView 
+            intensity={20} 
+            tint="light"
+            style={styles.headerContainer}
           >
-            {entry.role === "assistant" && (
-              <View style={styles.assistantHeader}>
-                <Ionicons name="medical" size={20} color="#4A90E2" />
-                <Text style={styles.assistantName}>Medical Assistant</Text>
-              </View>
-            )}
-            <Text style={styles.chatText}>{entry.content}</Text>
-          </View>
-        ))}
-      </ScrollView>
-
-      <View style={styles.footer}>
-        {isLoading ? (
-          <ActivityIndicator size="large" color="#4A90E2" />
-        ) : (
-          <View style={styles.controls}>
-            <TouchableOpacity
-              style={[styles.button, isConnected ? styles.buttonDanger : styles.buttonPrimary]}
-              onPress={() => setIsConnected(!isConnected)}
-            >
-              <Ionicons 
-                name={isConnected ? "power" : "power-outline"} 
-                size={24} 
-                color="white" 
-              />
-              <Text style={styles.buttonText}>
-                {isConnected ? "End Session" : "Start Session"}
-              </Text>
-            </TouchableOpacity>
-
-            {isConnected && (
+            <View style={styles.header}>
               <TouchableOpacity
-                style={[styles.button, styles.buttonSecondary]}
+                style={styles.iconButton}
+                onPress={() => setIsConnected(!isConnected)}
+              >
+                <Animated.View style={{ opacity: uiOpacity }}>
+                  <Ionicons
+                    name={isConnected ? "radio" : "radio-outline"}
+                    size={32}
+                    color="#1A1A1A"
+                  />
+                </Animated.View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.iconButton}
                 onPress={() => setIsMuted(!isMuted)}
               >
-                <Ionicons 
-                  name={isMuted ? "mic-off" : "mic"} 
-                  size={24} 
-                  color="white" 
-                />
-                <Text style={styles.buttonText}>
-                  {isMuted ? "Unmute" : "Mute"}
-                </Text>
+                <Animated.View style={{ opacity: uiOpacity }}>
+                  <Ionicons
+                    name={isMuted ? "mic-off" : "mic"}
+                    size={32}
+                    color="#1A1A1A"
+                  />
+                </Animated.View>
               </TouchableOpacity>
-            )}
+            </View>
+          </BlurView>
+
+          <View style={styles.messageContainer}>
+            <BlurView
+              intensity={30}
+              tint="light"
+              style={styles.messageBlurContainer}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="large" color="#1A1A1A" />
+              ) : (
+                <Animated.Text 
+                  style={[
+                    styles.messageText,
+                    {
+                      color: "#1A1A1A",
+                      opacity: messageOpacity,
+                      transform: [{
+                        translateY: textPositionAnimation
+                      }]
+                    }
+                  ]}
+                >
+                  {latestMessage}
+                </Animated.Text>
+              )}
+            </BlurView>
           </View>
-        )}
-      </View>
-    </SafeAreaView>
+
+          <BlurView
+            intensity={20}
+            tint="light"
+            style={styles.footerContainer}
+          >
+            <View style={styles.footer}>
+              <Animated.View 
+                style={[
+                  styles.emotionTags,
+                  {
+                    opacity: emotionOpacity,
+                    transform: [{ scale: emotionScale }]
+                  }
+                ]}
+              >
+                {topEmotions.map((emotion, index) => (
+                  <Animated.View 
+                    key={emotion.emotion} 
+                    style={[
+                      styles.emotionTag,
+                      { 
+                        marginRight: index < topEmotions.length - 1 ? 8 : 0,
+                      }
+                    ]}
+                  >
+                    <Text style={styles.emotionTagText}>{emotion.emotion}</Text>
+                  </Animated.View>
+                ))}
+              </Animated.View>
+              <BlurView intensity={20} tint="light" style={styles.footerBlur}>
+                <View style={styles.footerContent}>
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color="#1A1A1A" />
+                  ) : (
+                    <View style={styles.footerTextContainer}>
+                      {isConnected && !isMuted && <VoiceLevelBars isConnected={isConnected} isMuted={isMuted} />}
+                      <Text style={[styles.footerText, { color: "#1A1A1A" }]}>
+                        {isConnected ? "Listening..." : "Press the radio to start"}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </BlurView>
+            </View>
+          </BlurView>
+        </View>
+      </SafeAreaView>
+      {showBreathingExercise && (
+        <Animated.View style={[styles.breathingOverlay, { opacity: breathingOpacity }]}>
+          <BreathingExercise
+            pattern={breathingPattern}
+            duration={breathingDuration}
+            onComplete={handleBreathStepComplete}
+          />
+        </Animated.View>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F7FA",
   },
-  header: {
-    padding: 16,
-    backgroundColor: "white",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E1E8ED",
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  gradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
   },
-  logo: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#1A1A1A",
-  },
-  connectionStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  connected: {
-    backgroundColor: "#4CAF50",
-  },
-  disconnected: {
-    backgroundColor: "#FF5252",
-  },
-  statusText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  chatDisplay: {
+  safeArea: {
     flex: 1,
   },
-  chatContent: {
-    padding: 16,
-  },
-  chatEntry: {
-    padding: 16,
-    marginVertical: 8,
-    borderRadius: 12,
-    maxWidth: "85%",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  userChatEntry: {
-    backgroundColor: "#4A90E2",
-    alignSelf: "flex-end",
-    marginLeft: "15%",
-  },
-  assistantChatEntry: {
-    backgroundColor: "white",
-    alignSelf: "flex-start",
-    marginRight: "15%",
-  },
-  assistantHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  assistantName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#4A90E2",
-    marginLeft: 6,
-  },
-  chatText: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: "#1A1A1A",
-  },
-  footer: {
-    padding: 16,
-    backgroundColor: "white",
-    borderTopWidth: 1,
-    borderTopColor: "#E1E8ED",
-  },
-  controls: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  button: {
-    flexDirection: 'row',
+  contentContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    padding: 20,
+  },
+  headerContainer: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    padding: 16,
+    gap: 20,
+  },
+  messageBlurContainer: {
     borderRadius: 25,
-    minWidth: 150,
+    overflow: 'hidden',
+    padding: 24,
+    width: '100%',
+    alignItems: 'center',
   },
-  buttonPrimary: {
-    backgroundColor: "#4A90E2",
+  messageContainer: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
-  buttonSecondary: {
-    backgroundColor: "#738A94",
+  messageText: {
+    fontSize: 36,
+    fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: 0.3,
+    lineHeight: 44,
   },
-  buttonDanger: {
-    backgroundColor: "#FF5252",
+  footerContainer: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginTop: 20,
   },
-  buttonText: {
-    color: "white",
+  footer: {
+    padding: 12,
+    alignItems: 'center',
+  },
+  statusText: {
     fontSize: 16,
-    fontWeight: "600",
-    marginLeft: 8,
+    opacity: 0.8,
+  },
+  iconButton: {
+    padding: 8,
+  },
+  breathingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  },
+  emotionTags: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 16,
+  },
+  emotionTag: {
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
+  },
+  emotionTagText: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#1A1A1A',
+    opacity: 0.7,
+    letterSpacing: 0.3,
+  },
+  footerBlur: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginTop: 4,
+  },
+  footerContent: {
+    padding: 12,
+    alignItems: 'center',
+  },
+  footerTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  footerText: {
+    fontSize: 16,
+    opacity: 0.8,
+  },
+  voiceBarsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 20,
+    marginRight: 8,
+  },
+  voiceBar: {
+    width: 3,
+    height: 15,
+    backgroundColor: '#1A1A1A',
+    marginHorizontal: 1,
+    borderRadius: 2,
+    opacity: 0.6,
   },
 });

@@ -3,8 +3,9 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
+import SplashScreenComponent from '../components/SplashScreen';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -16,6 +17,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (loaded) {
@@ -23,8 +25,17 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
+  useEffect(() => {
+    // Simulate loading time or do actual initialization
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000); // Show splash for 3 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!loaded || isLoading) {
+    return <SplashScreenComponent />;
   }
 
   return (
