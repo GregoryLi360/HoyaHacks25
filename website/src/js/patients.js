@@ -102,7 +102,6 @@ function createPatientRow(patient) {
         <td class="actions">
             <button class="icon-btn edit-btn" title="Edit patient"><i class="material-icons">edit</i></button>
             <button class="icon-btn delete-btn" title="Delete patient"><i class="material-icons">delete</i></button>
-            <button class="icon-btn" title="More options"><i class="material-icons">more_vert</i></button>
         </td>
     `;
 
@@ -220,7 +219,66 @@ function handleJumpToPage(input, totalPages) {
     refreshPatientsList(page, searchQuery);
 }
 
-// Refresh the patients list
+// Keep only this sorting code at the top level, before the DOMContentLoaded event
+let currentSortField = 'name';
+let isAscending = true;
+
+function sortPatients(field) {
+    // Only toggle direction if clicking the same field
+    if (field === currentSortField) {
+        isAscending = !isAscending;
+    } else {
+        // When switching to a new field, default to ascending
+        currentSortField = field;
+        isAscending = true;
+    }
+    
+    const buttons = document.querySelectorAll('.sort-dropdown button');
+    buttons.forEach(btn => {
+        const isCurrentField = btn.getAttribute('onclick').includes(field);
+        if (isCurrentField) {
+            const displayName = field === 'dateAdmitted' ? 'Date' : field.charAt(0).toUpperCase() + field.slice(1);
+            btn.innerHTML = `Sort by ${displayName}<span>${isAscending ? '↓' : '↑'}</span>`;
+        } else {
+            const fieldName = btn.getAttribute('onclick').match(/sortPatients\('(.+?)'\)/)[1];
+            const displayName = fieldName === 'dateAdmitted' ? 'Date' : fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+            btn.innerHTML = `Sort by ${displayName}`;
+        }
+    });
+    
+    refreshPatientsList();
+    document.querySelector('.sort-dropdown').classList.remove('show');
+}
+
+// Add this sorting function
+function sortPatientsList(patients, field) {
+    return [...patients].sort((a, b) => {
+        let valueA, valueB;
+        
+        switch(field) {
+            case 'name':
+                valueA = `${a.firstName} ${a.lastName}`.toLowerCase();
+                valueB = `${b.firstName} ${b.lastName}`.toLowerCase();
+                break;
+            case 'dateAdmitted':
+                valueA = new Date(a.dateAdmitted);
+                valueB = new Date(b.dateAdmitted);
+                break;
+            case 'mrn':
+                valueA = a.mrn.toLowerCase();
+                valueB = b.mrn.toLowerCase();
+                break;
+            default:
+                return 0;
+        }
+
+        if (valueA < valueB) return isAscending ? -1 : 1;
+        if (valueA > valueB) return isAscending ? 1 : -1;
+        return 0;
+    });
+}
+
+// Modify the refreshPatientsList function to include sorting
 export async function refreshPatientsList(page = 1, searchQuery = '') {
     try {
         console.log('Refreshing patients list...');
@@ -239,9 +297,14 @@ export async function refreshPatientsList(page = 1, searchQuery = '') {
 
         // Get patients data
         console.log('Getting patients data...');
-        const { patients, totalPages, currentPage } = searchQuery ? 
+        let { patients, totalPages, currentPage } = searchQuery ? 
             await searchPatients(searchQuery, page) : 
             getPatients(page);
+        
+        // Sort patients if a sort field is selected
+        if (currentSortField) {
+            patients = sortPatientsList(patients, currentSortField);
+        }
         
         console.log('Retrieved patients:', patients);
 
@@ -360,6 +423,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Load initial patients data
             await getPatientsFromDatabase();
+            
+            // Update sort button text to reflect default sort
+            const sortButtons = document.querySelectorAll('.sort-dropdown button');
+            sortButtons.forEach(btn => {
+                if (btn.getAttribute('onclick').includes('name')) {
+                    btn.innerHTML = `Sort by Name<span>↓</span>`;
+                }
+            });
+            
             await refreshPatientsList();
             console.log('Initial patients list loaded');
 
@@ -417,6 +489,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
         console.log('Logout handler initialized');
         
+        // Initialize sort button dropdown
+        const sortBtn = document.querySelector('.sort-btn');
+        if (sortBtn) {
+            sortBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelector('.sort-dropdown').classList.toggle('show');
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelector('.sort-dropdown')?.classList.remove('show');
+        });
+        
         console.log('Page initialization complete');
     } catch (error) {
         console.error('Error initializing patients page:', error);
@@ -434,4 +520,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     }
-}); 
+});
+
+// Make sortPatients available globally for the onclick handlers
+window.sortPatients = sortPatients; 
