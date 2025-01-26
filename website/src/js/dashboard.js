@@ -131,6 +131,7 @@ function calculateMetrics(patients) {
         return logs.filter(log => log.interactionTime).map(log => ({
             mrn: patient.MRN,
             startTime: log.startTime || 0,
+            interactionTime: log.interactionTime || 0,
             emotionalState: log.emotionalState || 'neutral'
         }));
     });
@@ -142,7 +143,7 @@ function calculateMetrics(patients) {
     const uniqueUsers = new Set(allInteractions.map(i => i.mrn)).size;
 
     // Average interaction time
-    const totalTime = allInteractions.reduce((sum, i) => sum + (i.startTime || 0), 0);
+    const totalTime = allInteractions.reduce((sum, i) => sum + i.interactionTime, 0);
     const avgTime = totalInteractions > 0 ? Math.round(totalTime / totalInteractions) : 0;
 
     // Most common emotion
