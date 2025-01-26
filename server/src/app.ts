@@ -33,6 +33,8 @@ interface PatientData {
     interactionTime: number;
     emotionalState: EmotionalState;
     createdAt: Date;
+    _id?: any;
+    __v?: any;
 }
 
 interface DoctorToken {
@@ -146,10 +148,22 @@ router.post('/patients', async (req, res) => {
 
 router.get('/patients', async (req: Request, res: Response) => {
     try {
-        const data: PatientData[] = await Data.find().sort({ createdAt: -1 });
+        const data: PatientData[] = await Data.find().sort({ createdAt: -1 }).lean();
         const groupedByMRN = data.reduce((acc: { [key: string]: PatientData[] }, doc) => {
+            const filtered = {
+                MRN: doc.MRN,
+                firstName: doc.firstName,
+                lastName: doc.lastName,
+                diagnosis: doc.diagnosis,
+                notes: doc.notes,
+                medications: doc.medications,
+                startTime: doc.startTime,
+                interactionTime: doc.interactionTime,
+                emotionalState: doc.emotionalState,
+                createdAt: doc.createdAt
+            };
             if (!acc[doc.MRN]) { acc[doc.MRN] = []; }
-            acc[doc.MRN].push(doc);
+            acc[doc.MRN].push(filtered);
             return acc;
         }, {});
 
@@ -168,14 +182,27 @@ router.get('/patients/:MRN', async (req: Request, res: Response) => {
     const medicalRecordNumber = req.params.MRN;
 
     try {
-        const patients = await Data.find({ MRN: medicalRecordNumber }).sort({ createdAt: -1 });
+        const patients = await Data.find({ MRN: medicalRecordNumber }).sort({ createdAt: -1 }).lean();
         if (!patients) {
             res.status(404).send("Patient not found");
             return;
         }
 
-        console.log(patients);
-        res.status(200).json(patients);
+        const filteredPatients = patients.map(doc => ({
+            MRN: doc.MRN,
+            firstName: doc.firstName,
+            lastName: doc.lastName,
+            diagnosis: doc.diagnosis,
+            notes: doc.notes,
+            medications: doc.medications,
+            startTime: doc.startTime,
+            interactionTime: doc.interactionTime,
+            emotionalState: doc.emotionalState,
+            createdAt: doc.createdAt
+        }));
+
+        console.log(filteredPatients);
+        res.status(200).json(filteredPatients);
     } catch (err) {
         console.log(err);
         res.status(500).send("Error retrieving patient");
