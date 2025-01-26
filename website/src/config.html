@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Config - Baymax Applet</title>
+    <!-- External stylesheets -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/styles/styles.css">
+    <link rel="stylesheet" type="text/css" href="/styles/config.css">
+    <script>
+        // Check authentication
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        if (!token) {
+            window.location.href = '/auth.html';
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar will be loaded dynamically -->
+        
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="dashboard-content">
+                <div class="section-header">
+                    <h1>AI Configuration</h1>
+                    <div class="header-actions">
+                        <button class="update-btn" id="saveConfigBtn">
+                            <i class="material-icons">save</i>
+                            <span>Save Changes</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Configuration Sections -->
+                <div class="config-sections">
+                    <!-- Conversation Settings -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h2>
+                                <i class="material-icons">chat</i>
+                                Conversation Settings
+                            </h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label for="maxResponseTime">Maximum Response Time (seconds)</label>
+                                <input type="number" id="maxResponseTime" min="1" max="60" value="30">
+                            </div>
+                            <div class="form-group">
+                                <label for="conversationStyle">Conversation Style</label>
+                                <select id="conversationStyle">
+                                    <option value="professional">Professional</option>
+                                    <option value="friendly">Friendly</option>
+                                    <option value="empathetic">Empathetic</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Language Model Settings -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h2>
+                                <i class="material-icons">psychology</i>
+                                Language Model Settings
+                            </h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label for="modelTemperature">Model Temperature</label>
+                                <input type="range" id="modelTemperature" min="0" max="100" value="70">
+                                <span class="range-value">0.7</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="maxTokens">Maximum Tokens per Response</label>
+                                <input type="number" id="maxTokens" min="50" max="2000" value="1000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Patient Interaction Settings -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h2>
+                                <i class="material-icons">people</i>
+                                Patient Interaction Settings
+                            </h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label for="emotionDetection">Enable Emotion Detection</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="emotionDetection" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="autoSummarize">Auto-Summarize Conversations</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="autoSummarize" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="followupReminders">Enable Follow-up Reminders</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="followupReminders" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Response Settings -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h2>
+                                <i class="material-icons">warning</i>
+                                Emergency Response Settings
+                            </h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label for="emergencyKeywords">Emergency Keywords (comma-separated)</label>
+                                <input type="text" id="emergencyKeywords" value="emergency, urgent, help, crisis">
+                            </div>
+                            <div class="form-group">
+                                <label for="emergencyContact">Emergency Contact Email</label>
+                                <input type="email" id="emergencyContact" value="emergency@baymaxhealth.co">
+                                <!-- TODO: Change the email to emergency@thedomainwebuy.com or whatever top lvl domain we buy-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notifications -->
+    <div class="notification-banner">
+        <i class="material-icons success-icon">check_circle</i>
+        <span class="message">Configuration saved successfully</span>
+        <button class="close-notification">
+            <i class="material-icons">close</i>
+        </button>
+    </div>
+
+    <!-- Load scripts -->
+    <script type="module" src="/js/config.js"></script>
+</body>
+</html> 

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Baymax Applet</title>
+    <!-- External stylesheets -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/styles/styles.css">
+    <script>
+        // Check authentication
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        if (!token) {
+            window.location.href = '/auth.html';
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar will be loaded dynamically -->
+        
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- AI Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="material-icons">psychology</i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>AI Interactions</h3>
+                            <p class="metric-value">--</p>
+                            <p class="metric-change">Total interactions</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="material-icons">sentiment_satisfied_alt</i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Common Emotion</h3>
+                            <p class="metric-value">--</p>
+                            <p class="metric-change">Most frequent state</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="material-icons">timer</i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Avg. Duration</h3>
+                            <p class="metric-value">--</p>
+                            <p class="metric-change">Per interaction</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="material-icons">people</i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Active Users</h3>
+                            <p class="metric-value">--</p>
+                            <p class="metric-change">Unique patients</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Patient Interactions -->
+                <div class="recent-interactions">
+                    <div class="section-header">
+                        <h2>Recent Patient Interactions</h2>
+                        <div class="header-actions">
+                            <button class="update-btn">
+                                <i class="material-icons">sync</i>
+                                <span>Update</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="interactions-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Interaction Time</th>
+                                    <th>Duration</th>
+                                    <th>Emotional State</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="interactions-tbody">
+                                <!-- Interaction rows will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                        <div id="interactions-pagination">
+                            <!-- Pagination will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notifications -->
+    <div class="notification-banner">
+        <i class="material-icons success-icon">check_circle</i>
+        <span class="message" data-add-message="Patient data saved successfully" data-delete-message="Patient deleted successfully">Patient data saved successfully</span>
+        <button class="close-notification">
+            <i class="material-icons">close</i>
+        </button>
+    </div>
+
+    <!-- Load scripts -->
+    <script type="module" src="/js/dashboard.js"></script>
+</body>
+</html> 

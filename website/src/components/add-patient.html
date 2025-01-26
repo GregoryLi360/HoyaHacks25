@@ -1,0 +1,51 @@
+<div class="modal-header">
+    <h2>Add New Patient</h2>
+    <button class="close-modal">
+        <i class="material-icons">close</i>
+    </button>
+</div>
+<div class="modal-body">
+    <div class="form-error-message"></div>
+    <form id="newPatientForm" novalidate>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName">
+                <div class="error-message">First name is required</div>
+            </div>
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input type="text" id="lastName">
+                <div class="error-message">Last name is required</div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="mrn">Medical Record Number</label>
+                <input type="text" id="mrn">
+                <div class="error-message">Medical Record Number is required</div>
+            </div>
+            <div class="form-group">
+                <label for="diagnosis">Diagnosis</label>
+                <input type="text" id="diagnosis">
+                <div class="error-message">Diagnosis is required</div>
+            </div>
+        </div>
+        <div class="form-row full-width">
+            <div class="form-group full-width">
+                <label for="clinicalNotes">Clinical Notes</label>
+                <textarea id="clinicalNotes" rows="6" placeholder="Enter any relevant clinical notes..."></textarea>
+            </div>
+        </div>
+        <div class="form-row full-width">
+            <div class="form-group full-width">
+                <label for="medications">Medications</label>
+                <input type="text" id="medications" placeholder="Enter patient medications">
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="btn-secondary close-modal">Cancel</button>
+            <button type="submit" class="btn-primary">Save Patient</button>
+        </div>
+    </form>
+</div> 

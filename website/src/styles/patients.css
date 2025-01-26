@@ -1,0 +1,581 @@
+/* Patients Section Styles */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    gap: 16px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #5f6368;
+    font-weight: 500;
+    position: relative;
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+/* Header Action Buttons */
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.download-btn, .filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.download-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.filter-btn {
+    background-color: white;
+    border: 1px solid var(--border-color);
+}
+
+.more-btn {
+    padding: 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+/* Status Legend */
+.status-legend {
+    display: none;
+}
+
+/* Patients Table */
+.patients-table {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    margin-top: 16px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+th {
+    color: #5f6368;
+    font-weight: 500;
+    background-color: #f8f9fa;
+}
+
+/* Patient Info in Table */
+.patient-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.patient-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 16px;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    background-color: var(--primary-color);
+}
+
+/* Status Tags */
+.status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.status.ongoing {
+    background-color: #E8F0FE;
+    color: #4285F4;
+}
+
+/* Action Buttons */
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #5f6368;
+    border-radius: 4px;
+}
+
+.icon-btn:hover {
+    background: #f1f3f4;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.jump-to-page {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+    padding-left: 16px;
+    border-left: 1px solid var(--border-color);
+}
+
+.jump-to-page-input {
+    width: 60px;
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.jump-to-page-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(114, 128, 255, 0.1);
+}
+
+.jump-to-page-input::-webkit-inner-spin-button,
+.jump-to-page-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.jump-to-page-input[type=number] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.page-info {
+    color: #5f6368;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.page-btn {
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 4px;
+    min-width: 40px;
+    transition: all 0.2s ease;
+}
+
+.page-btn:not(:disabled):hover {
+    background-color: var(--secondary-color);
+}
+
+.page-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.page-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ... (rest of the patients-specific styles from styles.css) ... */
+
+.diagnosis-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.treatment-cell {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.condition-filter {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.update-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background-color: var(--primary-color);
+    color: white;
+    min-width: 100px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.update-btn i {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.update-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.update-btn:active {
+    transform: scale(0.98);
+}
+
+/* Emotion Indicator Styles */
+.emotion-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    width: fit-content;
+    transition: all 0.3s ease;
+}
+
+/* Emotion-specific colors */
+.emotion-indicator.neutral {
+    background-color: rgba(114, 128, 255, 0.1);  /* Primary color with opacity */
+}
+
+.emotion-indicator.anxious {
+    background-color: #F0FFF0;  /* Very light pastel green */
+}
+
+.emotion-indicator.happy {
+    background-color: rgba(255, 179, 71, 0.1);
+}
+
+.emotion-indicator.depressed {
+    background-color: rgba(100, 149, 237, 0.1);
+}
+
+.emotion-indicator.angry {
+    background-color: rgba(255, 105, 97, 0.1);
+}
+
+.emotion-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.emotion-text.neutral {
+    color: var(--primary-color);  /* Primary color */
+}
+
+.emotion-text.anxious {
+    color: #90EE90;  /* Light pastel green */
+}
+
+.emotion-text.happy {
+    color: #FFB347;
+}
+
+.emotion-text.depressed {
+    color: #6495ED;
+}
+
+.emotion-text.angry {
+    color: #FF6961;
+}
+
+/* Hover effects */
+.emotion-indicator.neutral:hover {
+    background-color: rgba(114, 128, 255, 0.15);  /* Primary color with slightly higher opacity */
+}
+
+.emotion-indicator.anxious:hover {
+    background-color: #E0FFE0;  /* Slightly darker pastel green */
+}
+
+.emotion-indicator.happy:hover {
+    background-color: rgba(255, 179, 71, 0.15);
+}
+
+.emotion-indicator.depressed:hover {
+    background-color: rgba(100, 149, 237, 0.15);
+}
+
+.emotion-indicator.angry:hover {
+    background-color: rgba(255, 105, 97, 0.15);
+}
+
+/* Animation for emotion changes */
+.emotion-indicator svg {
+    transition: transform 0.3s ease;
+}
+
+.emotion-indicator:hover svg {
+    transform: scale(1.1);
+}
+
+.emotion-indicator svg path {
+    transition: d 0.3s ease;
+}
+
+/* Remove old status styles */
+.status-legend {
+    display: none;
+}
+
+/* Confirmation Modal Styles */
+.confirmation-modal .modal-content {
+    max-width: 400px;
+}
+
+.confirmation-modal .modal-body {
+    padding: 24px;
+}
+
+.confirmation-modal .warning {
+    color: #d93025;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.confirmation-modal .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.btn-danger {
+    background-color: #d93025;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-danger:hover {
+    background-color: #b3261e;
+}
+
+/* Notification Banner */
+.notification-banner {
+    display: none;
+}
+
+/* Remove old notification styles */
+.notification {
+    display: none;
+}
+
+.sort-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--primary-color);
+    background: white;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.sort-btn i {
+    font-size: 18px;
+}
+
+.sort-btn:active {
+    transform: scale(0.98);
+}
+
+/* Animation and Loading States */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+tr {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.error-state {
+    text-align: center;
+    padding: 40px;
+    color: #d93025;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Loading Spinner */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    margin-bottom: 12px;
+    animation: spin 1s linear infinite;
+}
+
+/* Stagger child animations */
+tbody tr {
+    opacity: 0;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+tbody tr:nth-child(1) { animation-delay: 0.1s; }
+tbody tr:nth-child(2) { animation-delay: 0.2s; }
+tbody tr:nth-child(3) { animation-delay: 0.3s; }
+tbody tr:nth-child(4) { animation-delay: 0.4s; }
+tbody tr:nth-child(5) { animation-delay: 0.5s; }
+
+.sort-dropdown {
+    display: none;
+    position: absolute;
+    background: white;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    top: calc(100% + 8px);
+    left: -8px;
+    min-width: 180px;
+    padding: 8px 0;
+    border: 1px solid var(--border-color);
+    z-index: 100;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.sort-dropdown.show {
+    display: block;
+}
+
+.sort-dropdown button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 16px;
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #5f6368;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.sort-dropdown button span {
+    position: absolute;
+    right: 16px;
+    display: inline-block;
+    line-height: 1;
+    font-size: 14px;
+    margin-top: -4px;
+}
+
+.sort-dropdown button:hover {
+    background: #f8f9fa;
+    color: var(--primary-color);
+}
+
+.sort-dropdown button::before {
+    content: 'sort';
+    font-family: 'Material Icons';
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+.sort-dropdown button:not(:last-child) {
+    border-bottom: 1px solid #f1f3f4;
+} 

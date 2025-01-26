@@ -1,0 +1,56 @@
+.notification-banner {
+    position: fixed;
+    right: 20px;
+    padding: 12px 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateX(120%);
+    transition: all 0.3s ease;
+    z-index: 10000;
+}
+
+.notification-banner.show {
+    transform: translateX(0);
+}
+
+.notification-banner.success {
+    border-left: 4px solid #4CAF50;
+}
+
+.notification-banner.error {
+    border-left: 4px solid #f44336;
+}
+
+.notification-banner .notification-icon {
+    font-size: 20px;
+}
+
+.notification-banner.success .notification-icon {
+    color: #4CAF50;
+}
+
+.notification-banner.error .notification-icon {
+    color: #f44336;
+}
+
+.notification-banner .message {
+    color: #333;
+    font-size: 14px;
+}
+
+.close-notification {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #666;
+    margin-left: auto;
+}
+
+.close-notification:hover {
+    color: #333;
+} 
