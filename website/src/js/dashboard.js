@@ -256,10 +256,10 @@ async function refreshInteractionsList() {
             }));
         });
         
-        // Filter out interactions without interactionTime and sort by most recent
+        // Filter out interactions without interactionTime and sort by startTime
         const interactions = allInteractions
             .filter(interaction => interaction.interactionTime)
-            .sort((a, b) => new Date(b.interactionTime) - new Date(a.interactionTime));
+            .sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
 
         // Display interactions
         tbody.innerHTML = '';
