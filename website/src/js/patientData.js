@@ -80,16 +80,6 @@ function formatDate(date) {
     });
 }
 
-// export function addPatient(patientData) {
-//     const newPatient = {
-//         ...patientData,
-//         dateAdmitted: new Date().toISOString(),
-//         emotionalState: emotionalStates.neutral
-//     };
-//     patients.unshift(newPatient); // Add to beginning of array
-//     return newPatient;
-// }
-
 export async function addPatient(patientData) {
     try {
         await fetch(`${ROOT_URL}/patients`, {
@@ -104,13 +94,14 @@ export async function addPatient(patientData) {
                 'lastName': patientData.lastName,
                 'diagnosis': patientData.diagnosis,
                 'notes': patientData.notes || '',
+                'emotionalState': patientData.emotionalState || 'neutral',
                 'medications': patientData.medications || '',
             })
         });
         const newPatient = {
             ...patientData,
             dateAdmitted: new Date().toISOString(),
-            emotionalState: neutral
+            emotionalState: 'neutral'
         };
         patients.unshift(newPatient); // Add to beginning of array
         return newPatient;
@@ -144,7 +135,7 @@ export async function getPatientsFromDatabase() {
                 mrn: patient.MRN,
                 diagnosis: latestLog.diagnosis || '',
                 dateAdmitted: latestLog.createdAt || new Date().toISOString(),
-                emotionalState: latestLog.emotionalState || emotionalStates.neutral,
+                emotionalState: latestLog.emotionalState || 'neutral',
                 startTime: latestLog.startTime || '',
                 interactionTime: latestLog.interactionTime || '',
                 notes: latestLog.notes || '',
