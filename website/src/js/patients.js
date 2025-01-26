@@ -48,18 +48,26 @@ function editPatientHandler(patient) {
         firstName: form.querySelector('#firstName'),
         lastName: form.querySelector('#lastName'),
         mrn: form.querySelector('#mrn'),
-        diagnosis: form.querySelector('#diagnosis')
+        diagnosis: form.querySelector('#diagnosis'),
+        medications: form.querySelector('#medications')
     };
 
-    // Set values and fix cursor position
+    // Handle regular inputs
     Object.entries(inputs).forEach(([key, input]) => {
-        input.value = patient[key];
+        if (!input) return; // Skip if input doesn't exist
+        input.value = patient[key] || '';
         // Move cursor to end of input
         input.addEventListener('focus', function() {
             const len = this.value.length;
             this.setSelectionRange(len, len);
         }, { once: true });
     });
+
+    // Handle textarea separately
+    const clinicalNotes = form.querySelector('#clinicalNotes');
+    if (clinicalNotes) {
+        clinicalNotes.textContent = patient.notes || '';
+    }
 
     // Show the modal
     modal.style.display = 'flex';
