@@ -56,6 +56,9 @@ let patients = [
 // Pagination settings
 const PATIENTS_PER_PAGE = 5;
 
+const ROOT_URL = "https://hoyahacks25.onrender.com/api";
+const AUTH_TOKEN = "05d49692b755f99c4504b510418efeeeebfd466892540f27acf9a31a326d6504";
+
 // Format date to MM/DD/YYYY
 function formatDate(date) {
     return new Date(date).toLocaleDateString('en-US', {
@@ -73,6 +76,38 @@ export function addPatient(patientData) {
     };
     patients.unshift(newPatient); // Add to beginning of array
     return newPatient;
+export async function addPatient(patientData) {
+    try {
+        await fetch(`${ROOT_URL}/patients`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + AUTH_TOKEN,
+            },
+            body: JSON.stringify({
+                'MRN': patientData.mrn,
+                'firstName': patientData.firstName,
+                'lastName': patientData.lastName,
+                'diagnosis': patientData.diagnosis,
+                'notes': patientData.notes || '',
+                'medications': patientData.medications || '',
+            })
+        });
+        const newPatient = {
+            ...patientData,
+            dateAdmitted: new Date().toISOString(),
+            emotionalState: {
+                state: 'neutral',
+                color: '#7280ff',
+                lightColor: '#e6e9ff'
+            }
+        };
+        patients.unshift(newPatient); // Add to beginning of array
+        return newPatient;
+    } catch (error) {
+        console.error('Error adding patient:', error);
+        return null;
+    }
 }
 
 export function getPatients(page = 1) {
@@ -89,6 +124,12 @@ export function getPatients(page = 1) {
 
 export function deletePatient(mrn) {
     const index = patients.findIndex(p => p.mrn === mrn);
+    fetch(`${ROOT_URL}/${mrn}`, {
+        method: "DELETE",
+    })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error('Error:', error));
     if (index !== -1) {
         patients.splice(index, 1);
         return true;
@@ -103,11 +144,27 @@ export function updatePatientEmotion(mrn, emotionalState) {
     }
 }
 
-export function updatePatient(originalMrn, updatedData) {
+export async function updatePatient(originalMrn, updatedData) {
     const index = patients.findIndex(p => p.mrn === originalMrn);
     if (index !== -1) {
         // Preserve the original dateAdmitted and emotionalState
         const originalPatient = patients[index];
+
+        await fetch(`${ROOT_URL}/patients`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + AUTH_TOKEN,
+            },
+            body: JSON.stringify({
+                'MRN': originalMrn,
+                'firstName': updatedData.firstName,
+                'lastName': updatedData.lastName,
+                'diagnosis': updatedData.diagnosis,
+                'notes': updatedData.notes || '',
+                'medications': updatedData.medications || '',
+            })
+        });
         patients[index] = {
             ...updatedData,
             dateAdmitted: originalPatient.dateAdmitted,
