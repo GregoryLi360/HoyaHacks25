@@ -29,10 +29,9 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "image": "./assets/images/baymax_face.png",
+          "imageResizeMode": "contain",
+          "backgroundColor": "#FFFFFF"
         }
       ]
     ],
