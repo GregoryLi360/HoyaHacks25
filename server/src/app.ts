@@ -19,6 +19,9 @@ const corOptions = {
 app.use(express.json());
 app.use(cors(corOptions));
 
+type EmotionalState = 'anxious' | 'depressed' | 'neutral' | 'positive' | 'calm' | 
+    'frustrated' | 'hopeful' | 'confident' | 'tired' | 'excited' | 'worried' | 'grateful';
+
 interface PatientData {
     MRN: string;
     firstName: string;
@@ -26,6 +29,9 @@ interface PatientData {
     diagnosis: string;
     notes: string;
     medications: string;
+    startTime: Date;
+    interactionTime: number;
+    emotionalState: EmotionalState;
     createdAt: Date;
 }
 
@@ -41,6 +47,9 @@ const dataSchema = new mongoose.Schema<PatientData>({
     diagnosis: String,
     notes: String,
     medications: String,
+    startTime: Date,
+    interactionTime: Number,
+    emotionalState: String,
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -112,10 +121,7 @@ router.post('/patients', async (req, res) => {
     console.log(req.body);
 
     try {
-        const medicalRecordNumber = req.body.MRN;
         const patientData: PatientData = req.body;
-        // const exisitingPatient: PatientData | {} = await Data.findOne({ MRN: medicalRecordNumber }) || {};
-        // const patientData: PatientData = { ...exisitingPatient, ...patientNewData };
 
         const data = new Data(patientData);
         await data.save();
