@@ -124,11 +124,11 @@ router.post('/patients', async (req, res) => {
         const medicalRecordNumber = req.body.MRN;
         const patientNewData: PatientData = req.body;
 
-        // Get existing entries and remove _id fields
+        // Get existing entries and remove _id and createdAt fields
         const existingPatients = (await Data.find({ MRN: medicalRecordNumber }).sort({ createdAt: 1 }))
             .map(doc => {
-                const { _id, ...patientWithoutId } = doc.toObject();
-                return patientWithoutId;
+                const { _id, createdAt, ...patientWithoutMetadata } = doc.toObject();
+                return patientWithoutMetadata;
             });
         
         let patientData: PatientData = {} as PatientData;
