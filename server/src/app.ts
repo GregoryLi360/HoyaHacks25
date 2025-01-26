@@ -11,7 +11,7 @@ const port = process.env.PORT!;
 const uri = process.env.MONGODB_URI!;
 
 const corOptions = {
-    origin: "ORIGIN_URL_GOES_HERE",
+    origin: "*",
     credentials: true,
     optionSuccessStatus: 200,
 };
