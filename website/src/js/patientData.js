@@ -76,6 +76,8 @@ export function addPatient(patientData) {
     };
     patients.unshift(newPatient); // Add to beginning of array
     return newPatient;
+}
+
 export async function addPatient(patientData) {
     try {
         await fetch(`${ROOT_URL}/patients`, {
