@@ -1,0 +1,41 @@
+[build]
+  publish = "src"
+
+# Headers to ensure proper MIME types and caching
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Content-Type = "text/javascript"
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "text/javascript"
+    Cache-Control = "public, max-age=31536000"
+
+[[redirects]]
+  from = "/auth"
+  to = "/auth.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/patients"
+  to = "/patients.html"
+  status = 200
+
+[[redirects]]
+  from = "/config"
+  to = "/config.html"
+  status = 200
+
+# This should be the last redirect - catch all other routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200 
