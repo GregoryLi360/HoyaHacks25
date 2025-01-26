@@ -3,99 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Dashboard</title>
-    <!-- External stylesheets -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="/styles/styles.css">
+    <title>Baymax Applet</title>
+    <script>
+        // Check if user is authenticated
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        if (!token) {
+            window.location.href = '/auth.html';
+        } else {
+            window.location.href = '/dashboard.html';
+        }
+    </script>
 </head>
 <body>
-    <div class="container">
-        <!-- Sidebar Navigation -->
-        <nav class="sidebar">
-            <!-- Hospital Logo and Name -->
-            <div class="logo">
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Baymax Head (Circle) -->
-                    <circle cx="16" cy="16" r="14" fill="white" stroke="#333" stroke-width="1"/>
-                    <!-- Baymax Eyes and Line -->
-                    <circle cx="9" cy="16" r="1.75" fill="#333"/>
-                    <circle cx="23" cy="16" r="1.75" fill="#333"/>
-                    <line x1="9" y1="16" x2="23" y2="16" stroke="#333" stroke-width="1"/>
-                </svg>
-                <span>Baymax Applet</span>
-            </div>
-            <!-- Main Navigation Links -->
-            <ul class="nav-links">
-                <li data-section="dashboard">
-                    <i class="material-icons">dashboard</i>
-                    <span>Dashboard</span>
-                </li>
-                <li data-section="patients">
-                    <i class="material-icons">people</i>
-                    <span>Patients</span>
-                </li>
-                <li>
-                    <i class="material-icons">settings</i>
-                    <span>AI Settings</span>
-                </li>
-            </ul>
-        </nav>
-        
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <!-- Top Header with Search and Add Patient -->
-            <header>
-                <div class="search-bar">
-                    <i class="material-icons">search</i>
-                    <input type="text" placeholder="Search patients...">
-                </div>
-                <button id="addPatientBtn" class="add-patient-btn">
-                    <i class="material-icons">add</i>
-                    Add New Patient
-                </button>
-            </header>
-
-            <!-- Content sections -->
-            <div id="dashboard-section" class="content-section">
-                <!-- Dashboard content will be loaded here -->
-            </div>
-
-            <div id="patients-section" class="content-section">
-                <!-- Patients list content -->
-            </div>
-
-            <!-- Other sections -->
-            <div class="content-section" id="doctors-section">
-                <h2>Doctors List</h2>
-                <!-- TODO: Add doctors list implementation -->
-            </div>
-
-            <div class="content-section" id="analytics-section">
-                <h2>Analytics Dashboard</h2>
-                <!-- TODO: Add analytics implementation -->
-            </div>
-
-            <div class="content-section" id="settings-section">
-                <h2>Settings</h2>
-                <!-- TODO: Add settings implementation -->
-            </div>
-        </main>
-    </div>
-    <!-- Load scripts traditionally -->
-    <script type="module" src="script.js"></script>
-    <!-- Add this after main-content div but before closing body tag -->
-    <div id="addPatientModal" class="modal">
-        <div class="modal-content">
-            <!-- Content will be injected by components.js -->
-        </div>
-    </div>
-    <div class="notification-banner">
-        <i class="material-icons success-icon">check_circle</i>
-        <span class="message" data-add-message="Patient data saved successfully" data-delete-message="Patient deleted successfully">Patient data saved successfully</span>
-        <button class="close-notification">
-            <i class="material-icons">close</i>
-        </button>
+    <!-- This page will redirect immediately -->
+    <div style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+        <p>Loading...</p>
     </div>
 </body>
 </html> 

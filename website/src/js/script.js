@@ -1,11 +1,11 @@
-import { initializeDashboard, initializeModal } from './js/components.js';
-import { loadPatientsSection } from './js/patients.js';
-import notificationManager from './js/notifications.js';
+import { initializeDashboard, initializeModal } from './components.js';
+import { loadPatientsSection } from './patients.js';
+import notificationManager from './notifications.js';
 
 console.log('Script loaded');
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('DOM loaded');
+    console.log('Initializing application...');
     
     try {
         // Initialize components
@@ -53,10 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dashboardSection = document.getElementById('dashboard-section');
     if (dashboardSection) {
         dashboardSection.style.display = 'block';
-        // Add small delay to trigger animation
-        setTimeout(() => {
-            dashboardSection.classList.add('active');
-        }, 10);
+        dashboardSection.classList.add('active');
     }
     
     // Set dashboard link as active by default

@@ -1,4 +1,7 @@
-import { getPatients, emotionalStates, deletePatient } from './patientData.js';
+import { getPatients, emotionalStates, deletePatient, searchPatients } from './patientData.js';
+import { initializeModal } from './modal.js';
+import notificationManager from './notifications.js';
+import { initializeSidebar } from './components.js';
 
 // Create emotion indicator SVG
 function createEmotionSVG(emotionalState) {
@@ -189,7 +192,8 @@ function handlePaginationClick(e, currentPage, totalPages) {
     }
 
     if (newPage !== currentPage) {
-        refreshPatientsList(newPage);
+        const searchQuery = document.querySelector('#header-search')?.value || '';
+        refreshPatientsList(newPage, searchQuery);
     }
 }
 
@@ -206,94 +210,189 @@ function handleJumpToPage(input, totalPages) {
     // Update input value if it was out of bounds
     input.value = page;
     
-    refreshPatientsList(page);
+    const searchQuery = document.querySelector('#header-search')?.value || '';
+    refreshPatientsList(page, searchQuery);
 }
 
 // Refresh the patients list
-export function refreshPatientsList(page = 1) {
-    const patientsSection = document.getElementById('patients-section');
-    if (!patientsSection) return;
-
-    const { patients, totalPages, currentPage } = getPatients(page);
-    
-    patientsSection.innerHTML = `
-        <div class="section-header">
-            <div class="header-actions">
-                <button class="filter-btn">
-                    <i class="material-icons">filter_list</i>
-                    Filter
-                </button>
-                <button class="export-btn">
-                    <i class="material-icons">sync</i>
-                    <span>Update</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="patients-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Date</th>
-                        <th>MRN</th>
-                        <th>Diagnosis</th>
-                        <th>Emotional State</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="patients-tbody">
-                </tbody>
-            </table>
-            ${createPaginationHTML(currentPage, totalPages)}
-        </div>
-    `;
-
-    // Add patient rows
-    const tbody = patientsSection.querySelector('#patients-tbody');
-    patients.forEach(patient => {
-        tbody.appendChild(createPatientRow(patient));
-    });
-
-    // Add pagination event listeners
-    const pagination = patientsSection.querySelector('.pagination');
-    if (pagination) {
-        pagination.addEventListener('click', (e) => handlePaginationClick(e, currentPage, totalPages));
+export async function refreshPatientsList(page = 1, searchQuery = '') {
+    try {
+        console.log('Refreshing patients list...');
         
-        // Add jump to page handler
-        const jumpInput = pagination.querySelector('.jump-to-page-input');
-        if (jumpInput) {
-            jumpInput.addEventListener('change', () => handleJumpToPage(jumpInput, totalPages));
-            jumpInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleJumpToPage(jumpInput, totalPages);
-                }
+        // Get patients data
+        console.log('Getting patients data...');
+        const { patients, totalPages, currentPage } = searchQuery ? 
+            searchPatients(searchQuery, page) : 
+            getPatients(page);
+        
+        console.log('Retrieved patients:', patients);
+
+        // Add patient rows
+        const tbody = document.getElementById('patients-tbody');
+        if (tbody) {
+            tbody.innerHTML = '';
+            patients.forEach(patient => {
+                tbody.appendChild(createPatientRow(patient));
+            });
+            console.log('Patient rows added to table');
+        } else {
+            console.error('Could not find patients-tbody element');
+        }
+
+        // Update pagination
+        const paginationContainer = document.getElementById('pagination-container');
+        if (paginationContainer) {
+            paginationContainer.innerHTML = createPaginationHTML(currentPage, totalPages);
+            
+            // Add pagination event listeners
+            paginationContainer.addEventListener('click', (e) => handlePaginationClick(e, currentPage, totalPages));
+            
+            // Add jump to page handler
+            const jumpInput = paginationContainer.querySelector('.jump-to-page-input');
+            if (jumpInput) {
+                jumpInput.addEventListener('change', () => handleJumpToPage(jumpInput, totalPages));
+                jumpInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        handleJumpToPage(jumpInput, totalPages);
+                    }
+                });
+            }
+        }
+
+        // Add sort button event listener
+        const sortBtn = document.querySelector('.sort-btn');
+        if (sortBtn) {
+            sortBtn.addEventListener('click', () => {
+                // TODO: Implement sorting functionality
+                console.log('Sort button clicked');
             });
         }
-    }
-}
-
-// Initial load of patients section
-export function loadPatientsSection() {
-    refreshPatientsList();
-}
-
-async function loadComponent(path) {
-    try {
-        const response = await fetch(path);
-        return await response.text();
     } catch (error) {
-        console.error('Error loading component:', error);
-        return '';
+        console.error('Error refreshing patients:', error);
     }
 }
 
-export async function loadDashboardSection() {
-    const dashboardHtml = await loadComponent('../components/dashboard.html');
-    document.getElementById('dashboard-section').innerHTML = dashboardHtml;
+function setupModalControls() {
+    const addPatientBtn = document.getElementById('addPatientBtn');
+    const modal = document.getElementById('addPatientModal');
+
+    if (addPatientBtn && modal) {
+        addPatientBtn.addEventListener('click', () => {
+            modal.style.display = 'flex';
+            modal.offsetHeight; // Force reflow
+            modal.classList.add('show');
+        });
+    }
+
+    // Close modal handlers
+    window.closeModal = () => {
+        if (!modal) return;
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            const form = document.getElementById('newPatientForm');
+            if (form) form.reset();
+        }, 300);
+    };
+
+    // Close on outside click
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            window.closeModal();
+        }
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal?.classList.contains('show')) {
+            window.closeModal();
+        }
+    });
+
+    // Close buttons
+    const closeButtons = document.querySelectorAll('.close-modal');
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', window.closeModal);
+    });
 }
 
-export async function loadPatientModal() {
-    const modalHtml = await loadComponent('../components/add-patient.html');
-    document.getElementById('addPatientModal').innerHTML = modalHtml;
-} 
+// Initialize the patients page
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Initializing patients page...');
+    
+    try {
+        // Initialize sidebar first
+        await initializeSidebar('patients');
+        console.log('Sidebar initialized');
+        
+        // Only check for table if we're on the patients page
+        if (window.location.pathname.includes('patients.html')) {
+            const tbody = document.getElementById('patients-tbody');
+            if (!tbody) {
+                throw new Error('Patients table body not found');
+            }
+            console.log('Found patients table structure');
+        }
+        
+        // Initialize modal
+        await initializeModal();
+        console.log('Modal initialized');
+        
+        // Setup modal controls
+        setupModalControls();
+        console.log('Modal controls set up');
+        
+        // Only load patients list if we're on the patients page
+        if (window.location.pathname.includes('patients.html')) {
+            await refreshPatientsList();
+            console.log('Initial patients list loaded');
+        }
+
+        // Initialize search with debounce
+        const searchInput = document.getElementById('header-search');
+        if (searchInput) {
+            let debounceTimeout;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(() => {
+                    refreshPatientsList(1, e.target.value);
+                }, 300);
+            });
+            console.log('Search initialized with debounce');
+        }
+
+        // Initialize notifications
+        window.showNotification = (type = 'add') => {
+            const message = type === 'delete' ? 
+                'Patient deleted successfully' : 
+                'Patient data saved successfully';
+            notificationManager.show(message, type);
+        };
+        console.log('Notifications initialized');
+
+        // Handle logout
+        window.handleLogout = () => {
+            localStorage.removeItem('auth_token');
+            sessionStorage.removeItem('auth_token');
+            window.location.href = '/auth.html';
+        };
+        console.log('Logout handler initialized');
+        
+        console.log('Page initialization complete');
+    } catch (error) {
+        console.error('Error initializing patients page:', error);
+        // Only show error message if we're on the patients page
+        if (window.location.pathname.includes('patients.html')) {
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                mainContent.innerHTML = `
+                    <div class="error-message" style="padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; margin: 20px;">
+                        <h3>Error Loading Patients Page</h3>
+                        <p>${error.message}</p>
+                        <p>Please try refreshing the page. If the problem persists, contact support.</p>
+                    </div>
+                `;
+            }
+        }
+    }
+}); 

@@ -269,8 +269,8 @@
 }
 
 .emotion.anxious {
-    background-color: #fef7e0;
-    color: #b06000;
+    background-color: #F0FFF0;  /* Very light pastel green */
+    color: #90EE90;  /* Light pastel green */
 }
 
 .emotion.positive {

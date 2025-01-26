@@ -252,31 +252,36 @@ th {
     outline: none;
 }
 
-.export-btn {
+.update-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     padding: 8px 16px;
-    border-radius: 4px;
+    border-radius: 8px;
     border: none;
     cursor: pointer;
     background-color: var(--primary-color);
     color: white;
     min-width: 100px;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    font-size: 14px;
+    transition: all 0.2s ease;
 }
 
-.export-btn i {
-    font-size: 20px;
+.update-btn i {
+    font-size: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.export-btn:hover {
+.update-btn:hover {
     background-color: var(--primary-dark);
     transform: translateY(-1px);
+}
+
+.update-btn:active {
+    transform: scale(0.98);
 }
 
 /* Emotion Indicator Styles */
@@ -291,8 +296,12 @@ th {
 }
 
 /* Emotion-specific colors */
+.emotion-indicator.neutral {
+    background-color: rgba(114, 128, 255, 0.1);  /* Primary color with opacity */
+}
+
 .emotion-indicator.anxious {
-    background-color: rgba(114, 128, 255, 0.1);
+    background-color: #F0FFF0;  /* Very light pastel green */
 }
 
 .emotion-indicator.happy {
@@ -312,8 +321,12 @@ th {
     font-weight: 500;
 }
 
+.emotion-text.neutral {
+    color: var(--primary-color);  /* Primary color */
+}
+
 .emotion-text.anxious {
-    color: #7280ff;
+    color: #90EE90;  /* Light pastel green */
 }
 
 .emotion-text.happy {
@@ -329,12 +342,12 @@ th {
 }
 
 /* Hover effects */
-.emotion-indicator:hover {
-    transform: translateY(-1px);
+.emotion-indicator.neutral:hover {
+    background-color: rgba(114, 128, 255, 0.15);  /* Primary color with slightly higher opacity */
 }
 
 .emotion-indicator.anxious:hover {
-    background-color: rgba(114, 128, 255, 0.15);
+    background-color: #E0FFE0;  /* Slightly darker pastel green */
 }
 
 .emotion-indicator.happy:hover {
@@ -411,4 +424,31 @@ th {
 /* Remove old notification styles */
 .notification {
     display: none;
+}
+
+.sort-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--primary-color);
+    background: white;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.sort-btn i {
+    font-size: 18px;
+}
+
+.sort-btn:active {
+    transform: scale(0.98);
 } 

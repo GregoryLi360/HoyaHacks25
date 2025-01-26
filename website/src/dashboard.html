@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Baymax Applet</title>
+    <!-- External stylesheets -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/styles/styles.css">
+    <script>
+        // Check authentication
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        if (!token) {
+            window.location.href = '/auth.html';
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar will be loaded dynamically -->
+        
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- AI Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="material-icons">psychology</i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>AI Interactions</h3>
+                            <p class="metric-value">2,547</p>
+                            <p class="metric-change positive">+15% from last week</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="material-icons">sentiment_satisfied_alt</i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Patient Satisfaction</h3>
+                            <p class="metric-value">94%</p>
+                            <p class="metric-change positive">+5% from last month</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="material-icons">timer</i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Response Time</h3>
+                            <p class="metric-value">1.2s</p>
+                            <p class="metric-change negative">+0.1s from average</p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="material-icons">people</i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Active Patients</h3>
+                            <p class="metric-value">156</p>
+                            <p class="metric-change positive">+12 this week</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Patient Interactions -->
+                <div class="recent-interactions">
+                    <h2>Recent Patient Interactions</h2>
+                    <div class="interactions-list">
+                        <!-- Interaction items will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notifications -->
+    <div class="notification-banner">
+        <i class="material-icons success-icon">check_circle</i>
+        <span class="message" data-add-message="Patient data saved successfully" data-delete-message="Patient deleted successfully">Patient data saved successfully</span>
+        <button class="close-notification">
+            <i class="material-icons">close</i>
+        </button>
+    </div>
+
+    <!-- Load scripts -->
+    <script type="module" src="/js/dashboard.js"></script>
+</body>
+</html> 

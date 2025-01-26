@@ -1,55 +1,45 @@
 <div class="modal-header">
     <h2>Add New Patient</h2>
-    <button class="close-modal" type="button">
+    <button class="close-modal">
         <i class="material-icons">close</i>
     </button>
 </div>
 <div class="modal-body">
-    <form id="newPatientForm">
-        <div class="form-row" data-title="Personal Information">
+    <div class="form-error-message"></div>
+    <form id="newPatientForm" novalidate>
+        <div class="form-row">
             <div class="form-group">
                 <label for="firstName">First Name</label>
-                <input type="text" id="firstName" required>
+                <input type="text" id="firstName">
+                <div class="error-message">First name is required</div>
             </div>
             <div class="form-group">
                 <label for="lastName">Last Name</label>
-                <input type="text" id="lastName" required>
+                <input type="text" id="lastName">
+                <div class="error-message">Last name is required</div>
             </div>
         </div>
-
-        <div class="form-row" data-title="Medical Information">
+        <div class="form-row">
             <div class="form-group">
                 <label for="mrn">Medical Record Number</label>
-                <input type="text" id="mrn" required placeholder="Enter MRN">
+                <input type="text" id="mrn">
+                <div class="error-message">Medical Record Number is required</div>
             </div>
             <div class="form-group">
-                <label for="diagnosis">Primary Diagnosis</label>
-                <input type="text" id="diagnosis" placeholder="Enter diagnosis">
+                <label for="diagnosis">Diagnosis</label>
+                <input type="text" id="diagnosis">
+                <div class="error-message">Diagnosis is required</div>
             </div>
         </div>
-
-        <div class="form-row" data-title="Clinical Information">
+        <div class="form-row full-width">
             <div class="form-group full-width">
-                <label for="notes">Clinical Notes</label>
-                <textarea 
-                    id="notes" 
-                    placeholder="Enter detailed notes about patient's symptoms, treatment plan, and any relevant medical history..."
-                    rows="4"
-                    class="clinical-notes"
-                ></textarea>
+                <label for="clinicalNotes">Clinical Notes</label>
+                <textarea id="clinicalNotes" rows="6" placeholder="Enter any relevant clinical notes..."></textarea>
             </div>
         </div>
-
-        <div class="form-row" data-title="Additional Information">
-            <div class="form-group full-width">
-                <label for="medications">Current Medications</label>
-                <input type="text" id="medications" placeholder="List current medications">
-            </div>
-        </div>
-
         <div class="form-actions">
             <button type="button" class="btn-secondary close-modal">Cancel</button>
-            <button type="submit" class="btn-primary">Save Patient Data</button>
+            <button type="submit" class="btn-primary">Save Patient</button>
         </div>
     </form>
 </div> 

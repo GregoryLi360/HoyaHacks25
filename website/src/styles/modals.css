@@ -83,6 +83,7 @@
 
 .form-group.full-width {
     flex: 0 0 100%;
+    width: 100%;
 }
 
 .form-group label {
@@ -99,6 +100,24 @@
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 14px;
+}
+
+.form-group textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(114, 128, 255, 0.1);
 }
 
 .clinical-notes {
@@ -131,6 +150,7 @@
     gap: 12px;
     margin-top: 24px;
     padding-top: 24px;
+    border-top: 1px solid var(--border-color);
 }
 
 .form-actions .btn-primary {
@@ -184,6 +204,10 @@
 }
 
 /* Form Error Styles */
+.form-group input.error {
+    border: 1px solid #d93025;
+}
+
 .form-error-message {
     color: #d93025;
     background-color: #ffebee;
@@ -198,23 +222,17 @@
     display: block;
 }
 
-.form-group input.error {
-    border-color: #ffcdd2;  /* Pastel red border */
-    background-color: #fff5f5;  /* Very light red background */
-}
-
-.form-group input.error:focus {
-    border-color: #ef9a9a;  /* Slightly darker pastel red on focus */
-    box-shadow: 0 0 0 2px rgba(239, 154, 154, 0.2);  /* Pastel red shadow */
-}
-
-.field-error-message {
+.error-message {
     color: #d93025;
     font-size: 12px;
     margin-top: 4px;
     display: none;
 }
 
-.field-error-message.show {
+.form-group input.error + .error-message {
     display: block;
+}
+
+.form-row.full-width {
+    width: 100%;
 } 

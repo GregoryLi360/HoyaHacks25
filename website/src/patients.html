@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patients - Baymax Applet</title>
+    <!-- External stylesheets -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/styles/styles.css">
+    <script>
+        // Check authentication
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        if (!token) {
+            window.location.href = '/auth.html';
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar will be loaded dynamically -->
+        
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header with Search and Add Patient -->
+            <header>
+                <div class="search-bar">
+                    <i class="material-icons">search</i>
+                    <input type="text" id="header-search" placeholder="Search patients...">
+                </div>
+                <button id="addPatientBtn" class="add-patient-btn">
+                    <i class="material-icons">add</i>
+                    Add New Patient
+                </button>
+            </header>
+
+            <!-- Patients Content -->
+            <div class="patients-content">
+                <!-- Section Header with Actions -->
+                <div class="section-header">
+                    <div class="header-actions">
+                        <button class="sort-btn">
+                            <i class="material-icons">sort</i>
+                            Sort
+                        </button>
+                        <button class="update-btn">
+                            <i class="material-icons">sync</i>
+                            <span>Update</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Patients Data Table -->
+                <div class="patients-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Date</th>
+                                <th>MRN</th>
+                                <th>Diagnosis</th>
+                                <th>Emotional State</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patients-tbody">
+                            <!-- Patient rows will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                    <div id="pagination-container">
+                        <!-- Pagination will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Patient Modal -->
+    <div id="addPatientModal" class="modal">
+        <div class="modal-content">
+            <!-- Modal content will be loaded dynamically -->
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="notification-banner">
+        <i class="material-icons success-icon">check_circle</i>
+        <span class="message" data-add-message="Patient data saved successfully" data-delete-message="Patient deleted successfully">Patient data saved successfully</span>
+        <button class="close-notification">
+            <i class="material-icons">close</i>
+        </button>
+    </div>
+
+    <!-- Load scripts -->
+    <script type="module" src="/js/patients.js"></script>
+</body>
+</html> 
