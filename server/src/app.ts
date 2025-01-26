@@ -123,8 +123,15 @@ router.post('/patients', async (req, res) => {
     try {
         const medicalRecordNumber = req.body.MRN;
         const patientNewData: PatientData = req.body;
-        const exisitingPatient: PatientData | {} = await Data.findOne({ MRN: medicalRecordNumber }) || {};
-        const patientData: PatientData = { ...exisitingPatient, ...patientNewData };
+
+        const existingPatients = await Data.find({ MRN: medicalRecordNumber }).sort({ createdAt: 1 }); 
+        let patientData: PatientData = {} as PatientData;
+        
+        for (const patient of existingPatients) {
+            patientData = { ...patientData, ...patient.toObject() };
+        }
+        
+        patientData = { ...patientData, ...patientNewData };
 
         console.log(patientData);
 
