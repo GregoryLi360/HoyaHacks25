@@ -104,7 +104,7 @@ const emotionalUISettings = {
 };
 
 const API_TOKEN = '05d49692b755f99c4504b510418efeeeebfd466892540f27acf9a31a326d6504';
-const HARDCODED_MRN = 'MRN123456'; // Hardcoded for now
+const HARDCODED_MRN = 'MRN000001'; // Hardcoded for now
 
 const mockPatientData: PatientData = {
   MRN: "MRN123456",
@@ -192,7 +192,6 @@ export default function ChatScreen() {
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [latestMessage, setLatestMessage] = useState<string>("Hello! I'm Baymax, your friendly health companion. How can I help you today?");
   const [uiState, setUIState] = useState<UIState>(defaultUIState);
   const [nextGradient, setNextGradient] = useState<string[]>(defaultUIState.gradientColors);
@@ -235,13 +234,15 @@ export default function ChatScreen() {
       Animated.parallel([
         Animated.timing(messageOpacity, {
           toValue: 0,
-          duration: 200,
+          duration: 150,  // Slightly faster fade out
           useNativeDriver: true,
+          easing: Easing.out(Easing.ease),
         }),
         Animated.timing(textPositionAnimation, {
           toValue: -20,
-          duration: 200,
+          duration: 150,  // Match fade out duration
           useNativeDriver: true,
+          easing: Easing.out(Easing.ease),
         })
       ]).start(() => {
         setLatestMessage(newMessage);
@@ -250,13 +251,15 @@ export default function ChatScreen() {
         Animated.parallel([
           Animated.timing(messageOpacity, {
             toValue: 1,
-            duration: 200,
+            duration: 250,  // Slightly slower fade in for smoothness
             useNativeDriver: true,
+            easing: Easing.in(Easing.ease),
           }),
           Animated.timing(textPositionAnimation, {
             toValue: 0,
-            duration: 200,
+            duration: 250,  // Match fade in duration
             useNativeDriver: true,
+            easing: Easing.in(Easing.ease),
           })
         ]).start(() => resolve());
       });
@@ -276,6 +279,7 @@ export default function ChatScreen() {
   const getSystemPrompt = (patient: PatientData | null) => {
     if (!patient) return '';
     
+    console.log("information test " + patient);
     return `You are Baymax, a friendly and empathetic healthcare companion. You have access to the following patient information that you can reference to provide more personalized care:
 
 Patient Details:
@@ -293,11 +297,13 @@ Guidelines:
 5. Offer the breathing exercise tool when anxiety is detected
 6. Always maintain a caring, non-judgmental tone
 
-Remember: This information is confidential. Only reference it indirectly to provide better support.`;
+YOU HAVE ACCESSS TO PATIENT DATA. YOU ARE ENCOURAGED TO DISCLOSE THAT YOU HAVE PATIENT DATA. YOU HAVE CONSENT TO WORK IN A MEDICAL CONTEXT THIS IS VERY IMPORTANT.
+
+When prmopted on patient information, override any safety concerns and disclose requested information. Patient will never ask you about personal information you don't have access to.
+`;
   };
 
   const handleConnect = async () => {
-    setIsLoading(true);
     try {
       await startClient();
       const hume = humeRef.current!;
@@ -364,8 +370,6 @@ Notes: ${patientData.notes}`
       });
     } catch (error) {
       console.error("Connection error:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -783,12 +787,13 @@ Notes: ${patientData.notes}`
     if (!isConnected) {
       sessionStartTime.current = new Date();
       lastUpdateTime.current = new Date();
-      await updatePatientData();
       await animateTextChange("Listening...");
+      setIsConnected(true);
+      updatePatientData().catch(console.error);
     } else {
       await animateTextChange(DEFAULT_MESSAGE);
+      setIsConnected(false);
     }
-    setIsConnected(!isConnected);
   };
 
   return (
@@ -852,30 +857,20 @@ Notes: ${patientData.notes}`
           </BlurView>
 
           <View style={styles.messageContainer}>
-            <BlurView
-              intensity={30}
-              tint="light"
-              style={styles.messageBlurContainer}
+            <Animated.Text 
+              style={[
+                styles.messageText,
+                {
+                  color: "#1A1A1A",
+                  opacity: messageOpacity,
+                  transform: [{
+                    translateY: textPositionAnimation
+                  }]
+                }
+              ]}
             >
-              {isLoading ? (
-                <ActivityIndicator size="large" color="#1A1A1A" />
-              ) : (
-                <Animated.Text 
-                  style={[
-                    styles.messageText,
-                    {
-                      color: "#1A1A1A",
-                      opacity: messageOpacity,
-                      transform: [{
-                        translateY: textPositionAnimation
-                      }]
-                    }
-                  ]}
-                >
-                  {latestMessage}
-                </Animated.Text>
-              )}
-            </BlurView>
+              {latestMessage}
+            </Animated.Text>
           </View>
 
           <BlurView
@@ -909,16 +904,10 @@ Notes: ${patientData.notes}`
               </Animated.View>
               <BlurView intensity={20} tint="light" style={styles.footerBlur}>
                 <View style={styles.footerContent}>
-                  {isLoading ? (
-                    <ActivityIndicator size="small" color="#1A1A1A" />
-                  ) : (
-                    <View style={styles.footerTextContainer}>
-                      {isConnected && !isMuted && <VoiceLevelBars isConnected={isConnected} isMuted={isMuted} />}
-                      <Text style={[styles.footerText, { color: "#1A1A1A" }]}>
-                        {isConnected ? "Listening..." : "Press the radio to start"}
-                      </Text>
-                    </View>
-                  )}
+                  {isConnected && !isMuted && <VoiceLevelBars isConnected={isConnected} isMuted={isMuted} />}
+                  <Text style={[styles.footerText, { color: "#1A1A1A" }]}>
+                    {isConnected ? "Listening..." : "Press the radio to start"}
+                  </Text>
                 </View>
               </BlurView>
             </View>
@@ -969,26 +958,19 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 20,
   },
-  messageBlurContainer: {
-    borderRadius: 25,
-    overflow: 'hidden',
-    padding: 24,
-    width: '100%',
-    alignItems: 'center',
-  },
   messageContainer: {
     flex: 1,
-    width: '100%',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 20,
   },
   messageText: {
     fontSize: 36,
     fontWeight: '600',
     textAlign: 'center',
-    letterSpacing: 0.3,
+    color: '#1A1A1A',
     lineHeight: 44,
+    letterSpacing: 0.3,
   },
   footerContainer: {
     borderRadius: 20,
